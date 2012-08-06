@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/act" android:title="Act" android:icon="@drawable/act"/>
+    <item android:id="@+id/run" android:title="Run" android:icon="@drawable/run"/>
+    <item android:id="@+id/pause" android:title="Pause" android:icon="@drawable/pause" android:visible="false"/>
+    <item android:id="@+id/reset" android:title="Reset" android:icon="@drawable/reset"/>
+    <item android:id="@+id/speed" android:title="Speed"/>
+</menu>
