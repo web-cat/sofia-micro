@@ -1,6 +1,7 @@
 package sofia.micro;
 
 import java.util.List;
+import sofia.graphics.Anchor;
 import sofia.graphics.ImageShape;
 import sofia.graphics.Image;
 import sofia.graphics.Shape;
@@ -25,7 +26,7 @@ import android.graphics.RectF;
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
- * @version $Date: 2012/08/04 16:40 $
+ * @version $Date: 2012/08/06 11:13 $
  */
 public class Actor
     extends sofia.micro.internal.DelegatingShape
@@ -34,20 +35,42 @@ public class Actor
 
     /** The world containing this actor. */
     private World world;
-    private boolean bitmapScaledForWorld = false;
+    private boolean scaleToCell;
+    private boolean centerAnchorAfterScale = true;
 
 
     //~ Constructor ...........................................................
 
     // ----------------------------------------------------------
     /**
-     * Create a new Actor.
+     * Create a new Actor.  By default, this actor's image will be scaled
+     * to the size of a single grid cell, preserving aspect ratio.
      */
     public Actor()
     {
-        super(new RectF(0.0f, 0.0f, 1.0f, 1.0f));
-        setDelegate(new ImageShape(
-            new Image(getClass()), new RectF(0.0f, 0.0f, 1.0f, 1.0f)));
+        this(true);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Create a new Actor.
+     * @param scaleToCell If true, the Actor's image will be scaled to
+     *                    the dimensions of a single World grid cell, while
+     *                    preserving aspect ratio.  If false, the image
+     *                    will be sized relative to the underlying bitmap
+     *                    or shape.
+     */
+    public Actor(boolean scaleToCell)
+    {
+        super(new RectF(-0.5f, -0.5f, 0.5f, 0.5f));
+        this.scaleToCell = scaleToCell;
+        Image image = new Image(getClass());
+        image.setScaleForDpi(false);
+        setDelegate(new ImageShape(image, getBounds()));
+        // This call is via super, to avoid the variable reset employed
+        // when clients reset the position anchor
+        super.setPositionAnchor(Anchor.CENTER);
     }
 
 
@@ -155,13 +178,7 @@ public class Actor
      */
     public Shape getImage()
     {
-        Shape image = getDelegate();
-        if (image == null)
-        {
-            setImage(new Image(getClass()));
-        }
-        scaleBitmapForWorldIfNecessary();
-        return image;
+        return getDelegate();
     }
 
 
@@ -176,7 +193,9 @@ public class Actor
     public void setImage(String fileName)
         throws IllegalArgumentException
     {
-        setImage(new Image(fileName));
+        Image image = new Image(fileName);
+        image.setScaleForDpi(false);
+        setImage(image);
     }
 
 
@@ -201,10 +220,9 @@ public class Actor
     public void setImage(Shape image)
     {
         setDelegate(image);
-        bitmapScaledForWorld = false;
         if (world != null)
         {
-            scaleBitmapForWorldIfNecessary();
+            scaleImageForWorldIfNecessary();
         }
     }
 
@@ -484,6 +502,65 @@ public class Actor
     }
 
 
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setBounds(RectF newBounds)
+    {
+        scaleToCell = false;
+        super.setBounds(newBounds);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setPositionAnchor(Anchor anchor)
+    {
+        centerAnchorAfterScale = false;
+        super.setPositionAnchor(anchor);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setPositionAnchor(PointF anchor)
+    {
+        centerAnchorAfterScale = false;
+        super.setPositionAnchor(anchor);
+    }
+
+
+    // ----------------------------------------------------------
+    @Override
+    public void addOther(Shape newShape)
+    {
+        if (newShape instanceof Actor)
+        {
+            getWorld().add((Actor)newShape);
+        }
+        else
+        {
+            super.addOther(newShape);
+        }
+    }
+
+
+    // ----------------------------------------------------------
+    @Override
+    public void remove()
+    {
+        getWorld().remove(this);
+    }
+
+
     //~ Infrastructure Methods ................................................
 
     // ----------------------------------------------------------
@@ -494,23 +571,84 @@ public class Actor
         // super (or, more importantly, not calling super in an
         // overriding definition of addedToWorld() doesn't cause bugs).
         this.world = world;
-        bitmapScaledForWorld = false;
-        scaleBitmapForWorldIfNecessary();
+        scaleImageForWorldIfNecessary();
     }
 
 
     // ----------------------------------------------------------
-    private void scaleBitmapForWorldIfNecessary()
+    private void scaleImageForWorldIfNecessary()
     {
-        if (!bitmapScaledForWorld && world != null)
+        if (world == null)
         {
-            if (getDelegate() instanceof ImageShape)
-            {
-                ((ImageShape)getDelegate()).getImage().resolveAgainstContext(
-                    world.getWorldView().getContext());
-                // TODO: scale bitmap
-            }
-            bitmapScaledForWorld = true;
+            return;
         }
+
+        PointF anchor = null;
+        if (!centerAnchorAfterScale)
+        {
+            // Preserve old position anchor as a proportional value
+            anchor = getPositionAnchor();
+            RectF bb = getBounds();
+            anchor = new PointF(anchor.x / bb.width(), anchor.y / bb.height());
+        }
+        PointF position = getPosition();
+
+        if (getDelegate() instanceof ImageShape)
+        {
+            Image image = ((ImageShape)getDelegate()).getImage();
+            image.resolveAgainstContext(
+                world.getWorldView().getContext());
+            int width = image.getWidth();
+            int height = image.getHeight();
+            RectF bb = getBounds();
+            if (scaleToCell)
+            {
+                if (width > height)
+                {
+                    super.setBounds(new RectF(
+                        bb.left, bb.top,
+                        bb.left + 1.0f,
+                        bb.top + (height / (float)width)));
+                }
+                else if (width < height)
+                {
+                    super.setBounds(new RectF(
+                        bb.left, bb.top,
+                        bb.left + (width / (float)height),
+                        bb.top + 1.0f));
+                }
+                else
+                {
+                    super.setBounds(new RectF(
+                        bb.left, bb.top, bb.left + 1.0f, bb.top + 1.0f));
+                }
+            }
+            else
+            {
+                RectF newBounds = world.scaleRawPixels(width, height);
+                newBounds.offsetTo(bb.left, bb.top);
+                super.setBounds(newBounds);
+//                System.out.println("image = " + width + " x " + height);
+//                System.out.println("old bb = " + bb);
+//                System.out.println("new bb = " + newBounds);
+            }
+        }
+        // otherwise, just use the existing bounding box, which starts
+        // off as 1x1, which is already scaled to a single cell.
+
+        if (centerAnchorAfterScale)
+        {
+            super.setPositionAnchor(Anchor.CENTER);
+        }
+        else
+        {
+            // Instead, scale and reuse old anchor
+            RectF bb = getBounds();
+            anchor.x *= bb.width();
+            anchor.y *= bb.height();
+            super.setPositionAnchor(anchor);
+        }
+        // Reset position, so that scaling happens "around" the anchor
+        setPosition(position);
     }
 }

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.util.AttributeSet;
+import android.view.SurfaceHolder;
 
 //-------------------------------------------------------------------------
 /**
@@ -13,7 +14,7 @@ import android.util.AttributeSet;
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
- * @version $Date: 2012/08/04 16:40 $
+ * @version $Date: 2012/08/06 11:13 $
  */
 public class WorldView
     extends sofia.graphics.ShapeView
@@ -34,6 +35,32 @@ public class WorldView
     public WorldView(Context context)
     {
         super(context);
+        getHolder().addCallback(new SurfaceHolder.Callback() {
+            // ----------------------------------------------------------
+            @Override
+            public void surfaceCreated(SurfaceHolder paramSurfaceHolder)
+            {
+                System.out.println("WorldView: surface holder created.");
+            }
+
+
+            // ----------------------------------------------------------
+            @Override
+            public void surfaceChanged(
+                SurfaceHolder holder, int format, int width, int height)
+            {
+                System.out.println("WorldView: surface changed: "
+                    + width + " x " + height);
+            }
+
+
+            // ----------------------------------------------------------
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder)
+            {
+                System.out.println("WorldView: surface holder destroyed.");
+            }
+        });
     }
 
 
@@ -92,6 +119,40 @@ public class WorldView
 
     // ----------------------------------------------------------
     /**
+     * Add an Actor to the world at a specified location.  This is a
+     * convenience method that is equivalent to calling {@code add()} on
+     * an actor, and then calling {@code setGridLocation()} on the actor
+     * to specify its position.
+     *
+     * @param actor The Actor to add.
+     * @param x The x coordinate of the location where the actor is added.
+     * @param y The y coordinate of the location where the actor is added.
+     */
+    public void add(Actor actor, int x, int y)
+    {
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Add an Actor to the world at a specified location.
+     *
+     * <p>This method is identical to {@code add()}, but is provided for
+     * Greenfoot compatibility.</p>
+     *
+     * @param actor The Actor to add.
+     * @param x The x coordinate of the location where the actor is added.
+     * @param y The y coordinate of the location where the actor is added.
+     */
+    public void addObject(Actor actor, int x, int y)
+    {
+        assert world != null : "No world defined";
+        world.addObject(actor, x, y);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
      * Remove an Actor from this view.
      * @param actor The Actor to remove.
      */
@@ -99,6 +160,22 @@ public class WorldView
     {
         assert world != null : "No world defined";
         world.remove(actor);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Remove an Actor from this view.
+     *
+     * <p>This method is identical to {@code remove()}, but is provided
+     * for Greenfoot compatibility.</p>
+     *
+     * @param actor The Actor to remove.
+     */
+    public void removeObject(Actor actor)
+    {
+        assert world != null : "No world defined";
+        world.removeObject(actor);
     }
 
 
@@ -123,6 +200,49 @@ public class WorldView
     public World getWorld()
     {
         return world;
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Act method for world. The act method is called by the system
+     * at each action step in the environment. The world's act method is
+     * called before the act method of any objects in the world.
+     *
+     * <p>This method does nothing. It should be overridden in subclasses to
+     * implement an world's action.</p>
+     */
+    public void act()
+    {
+        // by default, do nothing
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * This method is called by the system when the execution has started.
+     * This method can be overridden to implement custom behavior when
+     * the execution is started.
+     * <p>
+     * This default implementation is empty.</p>
+     */
+    public void started()
+    {
+        // by default, do nothing
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * This method is called by the system when the execution has stopped.
+     * This method can be overridden to implement custom behavior when
+     * the execution is stopped.
+     * <p>
+     * This default implementation is empty.</p>
+     */
+    public void stopped()
+    {
+        // by default, do nothing
     }
 
 

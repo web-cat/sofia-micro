@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import java.util.Collection;
+import java.util.List;
 import sofia.graphics.Color;
 import sofia.graphics.Image;
 import sofia.graphics.Shape;
@@ -17,7 +18,7 @@ import sofia.graphics.Shape;
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
- * @version $Date: 2012/08/04 16:40 $
+ * @version $Date: 2012/08/06 11:13 $
  */
 public class World
 {
@@ -44,6 +45,7 @@ public class World
     private RectF  gridArea;        // In pixels
     private RectF  backgroundRect;  // BB for background image in grid coords
     private Matrix gridTransform;
+    private List<Actor> deferredAdds;
 
 
     //~ Constructor ...........................................................
@@ -55,6 +57,8 @@ public class World
      * a mid-level phone resolution) in landscape orientation, leaving some
      * room for a notification bar and other decorations.  This would
      * result in 24x24 pixel cells, or 16x16 cells on a 240x320 phone.
+     * This world (and its actors) will be automatically scaled up (zoomed)
+     * if the Android device resolution permits it.
      *
      * <p>If an image based on the world's class name exists, it will be
      * used as the background for each cell.</p>
@@ -68,7 +72,8 @@ public class World
     // ----------------------------------------------------------
     /**
      * Construct a new world. The size of the world (in number of cells)
-     * must be specified.
+     * must be specified. This world (and its actors) will be automatically
+     * scaled up (zoomed) if the Android device resolution permits it.
      *
      * <p>If an image based on the world's class name exists, it will be
      * used as the background for each cell.</p>
@@ -78,7 +83,59 @@ public class World
      */
     public World(int width, int height)
     {
-        this(width, height, true);
+        this(width, height, 0, true);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Construct a new world. The size of the world (in number of cells)
+     * must be specified.  This constructor also sets the effective cell
+     * size of this world (for bitmaps). This world (and its actors) will
+     * be automatically scaled up (zoomed) if the Android device resolution
+     * permits it.
+     *
+     * <p>If an image based on the world's class name exists, it will be
+     * used as the background for each cell.</p>
+     *
+     * @param width          The width of the world (in cells).
+     * @param height         The height of the world (in cells).
+     * @param scaledCellSize For rendering bitmaps, treat each cell as if
+     *                       it were a square of this many pixels on each side.
+     */
+    public World(int width, int height, int scaledCellSize)
+    {
+        this(width, height, scaledCellSize, true);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Construct a new world. The size of the world (in number of cells)
+     * must be specified.  This constructor also sets the effective cell
+     * size of this world (for bitmaps) and whether this world (and its
+     * actors) should be automatically scaled up (zoomed) if the Android
+     * device resolution permits it.
+     *
+     * <p>If an image based on the world's class name exists, it will be
+     * used as the background for each cell.</p>
+     *
+     * @param width          The width of the world (in cells).
+     * @param height         The height of the world (in cells).
+     * @param scaledCellSize For rendering bitmaps, treat each cell as if
+     *                       it were a square of this many pixels on each side.
+     * @param scaleToFit     If true, cells will be scaled larger or smaller
+     *                       so that the grid is as large as possible on
+     *                       the physical device, with bitmaps
+     *                       scaled proportionately.  If false, the grid
+     *                       will be rendered so that each cell is exactly
+     *                       scaledCellSize pixels in size, no more and no
+     *                       less, even if this means some of the grid will
+     *                       be clipped by the screen boundaries.
+     */
+    public World(int width, int height, int scaledCellSize, boolean scaleToFit)
+    {
+        this(width, height, scaledCellSize, scaleToFit, true);
     }
 
 
@@ -88,16 +145,28 @@ public class World
      * must be specified.
      *
      * <p>If an image based on the world's class name exists, it will be
-     * used as the background for each cell.</p>
+     * used as the background image.</p>
      *
-     * @param width  The width of the world (in cells).
-     * @param height The height of the world (in cells).
+     * @param width          The width of the world (in cells).
+     * @param height         The height of the world (in cells).
+     * @param scaledCellSize For rendering bitmaps, treat each cell as if
+     *                       it were a square of this many pixels on each side.
+     * @param scaleToFit     If true, cells will be scaled larger or smaller
+     *                       so that the grid is as large as possible on
+     *                       the physical device, with bitmaps
+     *                       scaled proportionately.  If false, the grid
+     *                       will be rendered so that each cell is exactly
+     *                       scaledCellSize pixels in size, no more and no
+     *                       less, even if this means some of the grid will
+     *                       be clipped by the screen boundaries.
      * @param backgroundIsForCell Indicates whether any existing background
-     *        image based on the world's class name should be used as
-     *        the background for each cell (if true), or stretched to fit the
-     *        entire world grid (if false).
+     *                       image based on the world's class name should be
+     *                       used as the background for each cell (if true),
+     *                       or stretched to fit the entire world grid (if
+     *                       false).
      */
-    public World(int width, int height, boolean backgroundIsForCell)
+    public World(int width, int height, int scaledCellSize, boolean scaleToFit,
+        boolean backgroundIsForCell)
     {
         this.width = width;
         this.height = height;
@@ -126,22 +195,68 @@ public class World
 
     // ----------------------------------------------------------
     /**
-     * Add an Actor to this world.
+     * Add an Actor to the world.
      * @param actor The Actor to add.
      */
     public void add(Actor actor)
     {
-        // TODO: implement appropriate add semantics
-        actor.setWorld(this);
-        view.add((Shape)actor);
-        actor.addedToWorld(this);
-        // throw new UnsupportedOperationException("Not yet implemented!");
+        if (view == null)
+        {
+            if (deferredAdds == null)
+            {
+                deferredAdds = new java.util.ArrayList<Actor>();
+            }
+            deferredAdds.add(actor);
+        }
+        else
+        {
+            // TODO: implement appropriate add semantics
+            actor.setWorld(this);
+            view.add((Shape)actor);
+            actor.addedToWorld(this);
+            // throw new UnsupportedOperationException("Not yet implemented!");
+        }
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Remove an Actor from this view.
+     * Add an Actor to the world at a specified location.  This is a
+     * convenience method that is equivalent to calling {@code add()} on
+     * an actor, and then calling {@code setGridLocation()} on the actor
+     * to specify its position.
+     *
+     * @param actor The Actor to add.
+     * @param x The x coordinate of the location where the actor is added.
+     * @param y The y coordinate of the location where the actor is added.
+     */
+    public void add(Actor actor, int x, int y)
+    {
+        actor.setGridLocation(x, y);
+        add(actor);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Add an Actor to the world at a specified location.
+     *
+     * <p>This method is identical to {@code add()}, but is provided for
+     * Greenfoot compatibility.</p>
+     *
+     * @param actor The Actor to add.
+     * @param x The x coordinate of the location where the actor is added.
+     * @param y The y coordinate of the location where the actor is added.
+     */
+    public void addObject(Actor actor, int x, int y)
+    {
+        add(actor, x, y);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Remove an Actor from the world.
      * @param actor The Actor to remove.
      */
     public void remove(Actor actor)
@@ -159,6 +274,21 @@ public class World
             throw new IllegalArgumentException(
                 "The specified Actor is not in this World.");
         }
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Remove an Actor from the world.
+     *
+     * <p>This method is identical to {@code remove()}, but is provided
+     * for Greenfoot compatibility.</p>
+     *
+     * @param actor The Actor to remove.
+     */
+    public void removeObject(Actor actor)
+    {
+        remove(actor);
     }
 
 
@@ -241,11 +371,39 @@ public class World
      *
      * @param background The background image to use for each cell.
      */
+    public void setCellBackground(String background)
+    {
+        setCellBackground(new Image(background));
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Set a background image to use for each Cell.  The given image will be
+     * scaled to fill exactly one cell, and tiled across the entire
+     * world's grid.  This will replace any world background image.
+     *
+     * @param background The background image to use for each cell.
+     */
     public void setCellBackground(Image background)
     {
         this.background = background;
-        backgroundRect = new RectF(0, 0, 1, 1);
+        backgroundRect = new RectF(-0.5f, -0.5f, 0.5f, 0.5f);
         backgroundIsForCell = true;
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Set a background image to use for the entire world.  The given image
+     * will be scaled to fill the world's entire grid.  This will replace
+     * any tiled cell background image.
+     *
+     * @param background The background image to use for the entire world.
+     */
+    public void setWorldBackground(String background)
+    {
+        setWorldBackground(new Image(background));
     }
 
 
@@ -260,7 +418,7 @@ public class World
     public void setWorldBackground(Image background)
     {
         this.background = background;
-        backgroundRect = new RectF(0, 0, width, height);
+        backgroundRect = new RectF(-0.5f, -0.5f, width - 0.5f, height - 0.5f);
         backgroundIsForCell = false;
     }
 
@@ -355,8 +513,8 @@ public class World
 
         if (view != null)
         {
-            System.out.println("scaledCellSize = " + scaledCellSize
-                + ", scaleToFit = " + scaleToFit);
+//            System.out.println("scaledCellSize = " + scaledCellSize
+//                + ", scaleToFit = " + scaleToFit);
             int vWidth = view.getWidth();
             int vHeight = view.getHeight();
             pixelsPerCell = scaledCellSize;
@@ -375,7 +533,7 @@ public class World
                 pixelsPerCell = Math.min(xScale, yScale);
             }
 
-            System.out.println("pixelsPerCell = " + pixelsPerCell);
+//            System.out.println("pixelsPerCell = " + pixelsPerCell);
             gridArea = new RectF(0, 0,
                 (pixelsPerCell * width),
                 (pixelsPerCell * height));
@@ -387,6 +545,7 @@ public class World
             gridArea.bottom += yOffset;
 
             gridTransform = new Matrix();
+            gridTransform.postTranslate(0.5f, 0.5f);
             gridTransform.postScale(pixelsPerCell, pixelsPerCell);
             gridTransform.postTranslate(gridArea.left, gridArea.top);
         }
@@ -435,6 +594,7 @@ public class World
                 if (backgroundIsForCell)
                 {
                     RectF dest = new RectF(backgroundRect);
+
                     for (int x = 0; x < width; x++)
                     {
                         dest.top = backgroundRect.top;
@@ -461,13 +621,15 @@ public class World
             Paint paint = new Paint();
             paint.setColor(gridColor.toRawColor());
             paint.setStrokeWidth(0);
-            for (int x = 0; x <= width; x++)
+            float limit = height - 0.5f;
+            for (float x = -0.5f; x < width; x++)
             {
-                canvas.drawLine(x, 0, x, height, paint);
+                canvas.drawLine(x, -0.5f, x, limit, paint);
             }
-            for (int y = 0; y <= height; y++)
+            limit = width - 0.5f;
+            for (float y = -0.5f; y < height; y++)
             {
-                canvas.drawLine(0, y, width, y, paint);
+                canvas.drawLine(-0.5f, y, limit, y, paint);
             }
         }
     }
@@ -485,6 +647,15 @@ public class World
 
         // force setScaledCellSize() to take effect here
         setScaledCellSize(scaledCellSize, scaleToFit);
+
+        if (deferredAdds != null)
+        {
+            for (Actor actor : deferredAdds)
+            {
+                add(actor);
+            }
+            deferredAdds = null;
+        }
     }
 
 
@@ -499,5 +670,19 @@ public class World
     /* package */ Matrix getGridTransform()
     {
         return gridTransform;
+    }
+
+
+    // ----------------------------------------------------------
+    /* package */ RectF scaleRawPixels(int width, int height)
+    {
+        float scaleFactor = pixelsPerCell;
+        if (scaledCellSize != 0)
+        {
+            scaleFactor = scaledCellSize;
+        }
+        return new RectF(0.0f, 0.0f,
+            width / scaleFactor,
+            height / scaleFactor);
     }
 }
