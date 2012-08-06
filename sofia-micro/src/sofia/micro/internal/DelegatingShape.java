@@ -3,6 +3,7 @@ package sofia.micro.internal;
 import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import sofia.graphics.Anchor;
 import sofia.graphics.Color;
 import sofia.graphics.PointAndAnchor;
 import sofia.graphics.Shape;
@@ -17,7 +18,7 @@ import sofia.graphics.Shape;
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
- * @version $Date: 2012/08/04 16:40 $
+ * @version $Date: 2012/08/06 11:13 $
  */
 public class DelegatingShape
     extends Shape
@@ -116,28 +117,6 @@ public class DelegatingShape
     /**
      * {@inheritDoc}
      */
-    public void setX2(float x2)
-    {
-        super.setX2(x2);
-        delegate.setX2(x2);
-    }
-
-
-    // ----------------------------------------------------------
-    /**
-     * {@inheritDoc}
-     */
-    public void setY2(float y2)
-    {
-        super.setY2(y2);
-        delegate.setY2(y2);
-    }
-
-
-    // ----------------------------------------------------------
-    /**
-     * {@inheritDoc}
-     */
     public void setPosition(PointF position)
     {
         super.setPosition(position);
@@ -153,6 +132,30 @@ public class DelegatingShape
     {
         super.setPosition(pointAndAnchor);
         delegate.setPosition(pointAndAnchor);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setPositionAnchor(PointF anchor)
+    {
+        super.setPositionAnchor(anchor);
+        delegate.setPositionAnchor(anchor);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setPositionAnchor(Anchor anchor)
+    {
+        super.setPositionAnchor(anchor);
+        delegate.setPositionAnchor(anchor);
     }
 
 
