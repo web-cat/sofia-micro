@@ -1,12 +1,9 @@
 package sofia.micro;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.SeekBar;
 import sofia.app.ShapeScreen;
 import sofia.graphics.ShapeView;
@@ -38,6 +35,18 @@ public class WorldScreen
 
 
     //~ Public Methods ........................................................
+
+    // ----------------------------------------------------------
+    /**
+     * Subclasses should override this method to set up the world
+     * associated with this screen.  The default implementation here
+     * does nothing.
+     */
+    public void initialize()
+    {
+        // Intentionally blank
+    }
+
 
     // ----------------------------------------------------------
     /**
@@ -139,36 +148,60 @@ public class WorldScreen
 
 
     // ----------------------------------------------------------
+    /**
+     * Called when the "Act" menu command is selected.
+     */
     public void actSelected()
     {
-        System.out.println("WorldScreen.actSelected()");
+        assert getWorld() != null : "No world defined";
+        getWorld().runOneStep();
     }
 
 
     // ----------------------------------------------------------
+    /**
+     * Called with the "Run" menu command is selected.
+     */
     public void runSelected()
     {
-        isRunning = true;
-        System.out.println("WorldScreen.runSelected()");
+        assert getWorld() != null : "No world defined";
+        getWorld().startRunning();
     }
 
 
     // ----------------------------------------------------------
+    /**
+     * Called with the "Pause" menu command is selected.
+     */
     public void pauseSelected()
     {
-        isRunning = false;
-        System.out.println("WorldScreen.pauseSelected()");
+        assert getWorld() != null : "No world defined";
+        getWorld().stopRunning();
     }
 
 
     // ----------------------------------------------------------
+    /**
+     * Called with the "Reset" menu command is selected.
+     */
     public void resetSelected()
     {
-        System.out.println("WorldScreen.resetSelected()");
+        if (getWorld() != null)
+        {
+            getWorld().stopRunning();
+        }
+        if (getWorldView() != null)
+        {
+            getWorldView().clear();
+        }
+        initialize();
     }
 
 
     // ----------------------------------------------------------
+    /**
+     * Called with the "Speed" menu command is selected.
+     */
     public void speedSelected()
     {
         System.out.println("WorldScreen.speedSelected()");
@@ -176,7 +209,7 @@ public class WorldScreen
         {
             return;
         }
-        ModalTask<Boolean> modal = new ModalTask<Boolean>() {
+        new ModalTask<Boolean>() {
             @Override
             protected void run()
             {
@@ -194,9 +227,7 @@ public class WorldScreen
                     {
                         SeekBar sb =
                             (SeekBar)layout.findViewById(R.id.speedBar);
-                        // FIXME: change speed here
-                        speed = sb.getProgress();
-                        System.out.println("new speed = " + sb.getProgress());
+                        getWorld().setSpeed(sb.getProgress());
                         endModal(true);
                     }
                 });
@@ -220,30 +251,34 @@ public class WorldScreen
                 builder.show();
                 SeekBar sb =
                     (SeekBar)layout.findViewById(R.id.speedBar);
-                // FIXME: set initial speed
-                sb.setProgress(speed);
+                sb.setProgress(getWorld().getSpeed());
             }
-        };
-
-        if (modal.executeTask())
-        {
-            System.out.println("speed changed!");
-        }
+        }.executeTask();
     }
 
 
     // ----------------------------------------------------------
-    private boolean isRunning = false;
-    private int speed = 24;
     @Override
     public boolean onPrepareOptionsMenu(Menu menu)
     {
         System.out.println("WorldScreen.onPrepareOptionsMenu()");
-        // TODO: enable/disable as required
-        menu.findItem(R.id.act).setEnabled(!isRunning);
-        menu.findItem(R.id.pause).setVisible(isRunning);
-        menu.findItem(R.id.run).setVisible(!isRunning);
-        // TODO: temporarily pause simulation thread
+        World world = getWorld();
+        if (world != null)
+        {
+            world.temporarilyPauseRunning();
+            menu.findItem(R.id.act).setVisible(true)
+                .setEnabled(!world.isRunning());
+            menu.findItem(R.id.pause).setVisible(world.isRunning());
+            menu.findItem(R.id.run).setVisible(!world.isRunning());
+            menu.findItem(R.id.speed).setVisible(true).setEnabled(true);
+        }
+        else
+        {
+            menu.findItem(R.id.act).setVisible(false);
+            menu.findItem(R.id.pause).setVisible(false);
+            menu.findItem(R.id.run).setVisible(false);
+            menu.findItem(R.id.speed).setVisible(false);
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -253,7 +288,11 @@ public class WorldScreen
     public void onOptionsMenuClosed(Menu menu)
     {
         System.out.println("WorldScreen.onOptionsMenuClosed()");
-        // TODO: resume simulation thread if it was temporarily paused
+        World world = getWorld();
+        if (world != null)
+        {
+            world.resumeRunningIfNecessary();
+        }
         super.onOptionsMenuClosed(menu);
     }
 

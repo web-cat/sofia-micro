@@ -1,9 +1,10 @@
 package sofia.micro;
 
-import java.util.List;
+import java.util.Set;
 import sofia.graphics.Anchor;
 import sofia.graphics.ImageShape;
 import sofia.graphics.Image;
+import sofia.graphics.PointAndAnchor;
 import sofia.graphics.Shape;
 import android.graphics.PointF;
 import android.graphics.RectF;
@@ -35,8 +36,17 @@ public class Actor
 
     /** The world containing this actor. */
     private World world;
+    private String nickName;
     private boolean scaleToCell;
     private boolean centerAnchorAfterScale = true;
+
+    /** Error message to display when trying to use methods that requires
+     * the actor be in a world.
+     */
+    private static final String ACTOR_NOT_IN_WORLD = "Actor not in world. "
+        + "An attempt was made to use the actor's location while it is not "
+        + "in the world. Either it has not yet been inserted, or it has been "
+        + "removed.";
 
 
     //~ Constructor ...........................................................
@@ -48,7 +58,19 @@ public class Actor
      */
     public Actor()
     {
-        this(true);
+        this(null, true);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Create a new Actor.  By default, this actor's image will be scaled
+     * to the size of a single grid cell, preserving aspect ratio.
+     * @param nickName The nickname for this actor.
+     */
+    public Actor(String nickName)
+    {
+        this(nickName, true);
     }
 
 
@@ -63,7 +85,24 @@ public class Actor
      */
     public Actor(boolean scaleToCell)
     {
+        this(null, scaleToCell);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Create a new Actor.
+     * @param nickName The nickname for this actor.
+     * @param scaleToCell If true, the Actor's image will be scaled to
+     *                    the dimensions of a single World grid cell, while
+     *                    preserving aspect ratio.  If false, the image
+     *                    will be sized relative to the underlying bitmap
+     *                    or shape.
+     */
+    public Actor(String nickName, boolean scaleToCell)
+    {
         super(new RectF(-0.5f, -0.5f, 0.5f, 0.5f));
+        this.nickName = nickName;
         this.scaleToCell = scaleToCell;
         Image image = new Image(getClass());
         image.setScaleForDpi(false);
@@ -188,7 +227,7 @@ public class Actor
      * jpeg, gif or png format.
      *
      * @param fileName The name of the image file.
-     * @throws IllegalArgumentException If the image can not be loaded.
+     * @throws IllegalArgumentException If the image cannot be loaded.
      */
     public void setImage(String fileName)
         throws IllegalArgumentException
@@ -247,13 +286,13 @@ public class Actor
      *            objects).
      * @param <MyActor> The type of actor to look for, as specified
      *                  in the cls parameter.
-     * @return A list of all neighbors found.
+     * @return A set of all neighbors found.
      */
-    protected <MyActor extends Actor> List<MyActor> getNeighbors(
-        int distance, boolean diagonal, Class<MyActor> cls)
+    protected <MyActor extends Actor> Set<MyActor> getNeighbors(
+        float distance, boolean diagonal, Class<MyActor> cls)
     {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not yet implemented!");
+        failIfNotInWorld();
+        return world.getNeighbors(this, distance, diagonal, cls);
     }
 
 
@@ -268,21 +307,21 @@ public class Actor
      *            objects).
      * @param <MyActor> The type of actor to look for, as specified
      *                  in the cls parameter.
-     * @return List of objects at the given offset. The list will include this
+     * @return Set of objects at the given offset. The set will include this
      *         object, if the offset is zero.
      */
-    protected <MyActor extends Actor> List<MyActor> getObjectsAtOffset(
-        int dx, int dy, Class<MyActor> cls)
+    protected <MyActor extends Actor> Set<MyActor> getObjectsAtOffset(
+        float dx, float dy, Class<MyActor> cls)
     {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not yet implemented!");
+        failIfNotInWorld();
+        return world.getObjectsAt(getX() + dx, getY() + dy, cls);
     }
 
 
     // ----------------------------------------------------------
     /**
      * Return one object that is located at the specified cell (relative to
-     * this objects location). Objects found can be restricted to a specific
+     * this object's location). Objects found can be restricted to a specific
      * class (and its subclasses) by supplying the 'cls' parameter. If more
      * than one object of the specified class resides at that location, one
      * of them will be chosen and returned.
@@ -296,38 +335,31 @@ public class Actor
      * @return An object at the given location, or null if none found.
      */
     protected <MyActor extends Actor> MyActor getOneObjectAtOffset(
-        int dx, int dy, Class<MyActor> cls)
+        float dx, float dy, Class<MyActor> cls)
     {
-        List<MyActor> characters = getObjectsAtOffset(dx, dy, cls);
-        if (characters.size() == 0)
-        {
-            return null;
-        }
-        else
-        {
-            return characters.get(0);
-        }
+        failIfNotInWorld();
+        return world.getOneObjectAt(getX() + dx, getY() + dy, cls);
     }
 
 
     // ----------------------------------------------------------
     /**
      * Return all objects within range 'radius' around this object.
-     * An object is within range if the distance between its centre and this
-     * object's centre is less than or equal to 'radius'.
+     * An object is within range if the distance between its centwr and this
+     * object's center is less than or equal to 'radius'.
      *
      * @param radius Radius of the circle (in cells).
      * @param cls Class of objects to look for (passing 'null' will find
      *            all objects).
      * @param <MyActor> The type of actor to look for, as specified
      *                  in the cls parameter.
-     * @return List of objects within the specified range.
+     * @return Set of objects within the specified range.
      */
-    protected <MyActor extends Actor> List<MyActor> getObjectsInRange(
-        int radius, Class<MyActor> cls)
+    protected <MyActor extends Actor> Set<MyActor> getObjectsInRange(
+        float radius, Class<MyActor> cls)
     {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not yet implemented!");
+        failIfNotInWorld();
+        return world.getObjectsInRange(getX(), getY(), radius, cls);
     }
 
 
@@ -340,13 +372,13 @@ public class Actor
      *            objects).
      * @param <MyActor> The type of actor to look for, as specified
      *                  in the cls parameter.
-     * @return List of intersecting objects.
+     * @return Set of intersecting objects.
      */
-    protected <MyActor extends Actor> List<MyActor> getIntersectingObjects(
+    protected <MyActor extends Actor> Set<MyActor> getIntersectingObjects(
         Class<MyActor> cls)
     {
-        // TODO: implement
-        throw new UnsupportedOperationException("Not yet implemented!");
+        failIfNotInWorld();
+        return world.getIntersectingObjects(this, cls);
     }
 
 
@@ -365,15 +397,8 @@ public class Actor
     protected <MyActor extends Actor> MyActor getOneIntersectingObject(
         Class<MyActor> cls)
     {
-        List<MyActor> characters = getIntersectingObjects(cls);
-        if (characters.size() == 0)
-        {
-            return null;
-        }
-        else
-        {
-            return characters.get(0);
-        }
+        failIfNotInWorld();
+        return world.getOneIntersectingObject(this, cls);
     }
 
 
@@ -407,7 +432,7 @@ public class Actor
     public int getGridX()
     {
         // Truncate, not round
-        return (int)getX();
+        return Math.round(getX());
     }
 
 
@@ -424,8 +449,22 @@ public class Actor
      */
     public void setGridX(int x)
     {
-        float xOffset = getWidth() / 2.0f - 0.5f;
-        setX(x - xOffset);
+        setX(x);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setX(float x)
+    {
+        if (world != null)
+        {
+            x = limit(x, world.getWidth());
+        }
+        super.setX(x);
     }
 
 
@@ -440,8 +479,7 @@ public class Actor
      */
     public int getGridY()
     {
-        // Truncate, not round
-        return (int)getY();
+        return Math.round(getY());
     }
 
 
@@ -458,8 +496,22 @@ public class Actor
      */
     public void setGridY(int y)
     {
-        float yOffset = getHeight() / 2.0f - 0.5f;
-        setY(y - yOffset);
+        setY(y);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setY(float y)
+    {
+        if (world != null)
+        {
+            y = limit(y, world.getHeight());
+        }
+        super.setY(y);
     }
 
 
@@ -480,9 +532,36 @@ public class Actor
      */
     public void setGridLocation(int x, int y)
     {
-        float xOffset = getWidth() / 2.0f - 0.5f;
-        float yOffset = getHeight() / 2.0f - 0.5f;
-        setPosition(new PointF(x - xOffset, y - yOffset));
+        setPosition(new PointF(x, y));
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setPosition(PointF position)
+    {
+        if (world != null)
+        {
+            position.x = limit(position.x, world.getWidth());
+            position.y = limit(position.y, world.getHeight());
+        }
+        super.setPosition(position);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setPosition(PointAndAnchor pointAndAnchor)
+    {
+        super.setPosition(pointAndAnchor);
+        // Force limit checking
+        setPosition(getPosition());
     }
 
 
@@ -511,6 +590,8 @@ public class Actor
     {
         scaleToCell = false;
         super.setBounds(newBounds);
+        // Force limit checking
+        setPosition(getPosition());
     }
 
 
@@ -523,6 +604,8 @@ public class Actor
     {
         centerAnchorAfterScale = false;
         super.setPositionAnchor(anchor);
+        // Force limit checking
+        setPosition(getPosition());
     }
 
 
@@ -535,6 +618,8 @@ public class Actor
     {
         centerAnchorAfterScale = false;
         super.setPositionAnchor(anchor);
+        // Force limit checking
+        setPosition(getPosition());
     }
 
 
@@ -542,6 +627,7 @@ public class Actor
     @Override
     public void addOther(Shape newShape)
     {
+        failIfNotInWorld();
         if (newShape instanceof Actor)
         {
             getWorld().add((Actor)newShape);
@@ -557,7 +643,49 @@ public class Actor
     @Override
     public void remove()
     {
+        failIfNotInWorld();
         getWorld().remove(this);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Get the "nickname" for this object--an assignable name that
+     * is used in the toString() representation of this object.
+     * @return This actor's nickname, or its class name if no
+     *         nickname has been assigned.
+     */
+    public String getNickName()
+    {
+        return (nickName == null)
+            ? getClass().getSimpleName()
+            : nickName;
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Set the "nickname" for this object--an assignable name that
+     * is used in the toString() representation of this object.
+     * @param nickName The new nickname for this actor. If null, it
+     *                 will "erase" any previously assigned name.
+     */
+    public void setNickName(String nickName)
+    {
+        this.nickName = nickName;
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Returns a human-readable string representation of the actor.
+     *
+     * @return A human-readable string representation of the actor.
+     */
+    @Override
+    public String toString()
+    {
+        return getNickName() + "(" + getGridX() + ", " + getGridY() + ")";
     }
 
 
@@ -571,6 +699,7 @@ public class Actor
         // super (or, more importantly, not calling super in an
         // overriding definition of addedToWorld() doesn't cause bugs).
         this.world = world;
+        // limit checking is handled by setPosition() at end of this call:
         scaleImageForWorldIfNecessary();
     }
 
@@ -628,9 +757,6 @@ public class Actor
                 RectF newBounds = world.scaleRawPixels(width, height);
                 newBounds.offsetTo(bb.left, bb.top);
                 super.setBounds(newBounds);
-//                System.out.println("image = " + width + " x " + height);
-//                System.out.println("old bb = " + bb);
-//                System.out.println("new bb = " + newBounds);
             }
         }
         // otherwise, just use the existing bounding box, which starts
@@ -650,5 +776,38 @@ public class Actor
         }
         // Reset position, so that scaling happens "around" the anchor
         setPosition(position);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Limits the value v to be less than limit and large or equal to zero.
+     */
+    private float limit(float v, float limit)
+    {
+        if (v < 0.0f)
+        {
+            v = 0.0f;
+        }
+        if (v > limit - 1.0f)
+        {
+            v = limit - 1.0f;
+        }
+        return v;
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Throws an exception if the actor is not in a world.
+     *
+     * @throws IllegalStateException If not in world.
+     */
+    private void failIfNotInWorld()
+    {
+        if (world == null)
+        {
+            throw new IllegalStateException(ACTOR_NOT_IN_WORLD);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package sofia.micro;
 
-import java.util.Collection;
+import sofia.graphics.Shape;
+import sofia.graphics.ShapeSet;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -40,7 +41,7 @@ public class WorldView
             @Override
             public void surfaceCreated(SurfaceHolder paramSurfaceHolder)
             {
-                System.out.println("WorldView: surface holder created.");
+//                System.out.println("WorldView: surface holder created.");
             }
 
 
@@ -49,8 +50,13 @@ public class WorldView
             public void surfaceChanged(
                 SurfaceHolder holder, int format, int width, int height)
             {
-                System.out.println("WorldView: surface changed: "
-                    + width + " x " + height);
+//                System.out.println("WorldView: surface changed: "
+//                    + width + " x " + height);
+                World world = getWorld();
+                if (world != null)
+                {
+                    world.resumeRunningIfNecessary();
+                }
             }
 
 
@@ -58,7 +64,12 @@ public class WorldView
             @Override
             public void surfaceDestroyed(SurfaceHolder holder)
             {
-                System.out.println("WorldView: surface holder destroyed.");
+//                System.out.println("WorldView: surface holder destroyed.");
+                World world = getWorld();
+                if (world != null)
+                {
+                    world.temporarilyPauseRunning();
+                }
             }
         });
     }
@@ -92,18 +103,6 @@ public class WorldView
 
 
     //~ Public Methods ........................................................
-
-    // ----------------------------------------------------------
-    /**
-     * Get all the actors on this view (i.e., in this view's world).
-     * @return a collection of all the actors in this view's world.
-     */
-    public Collection<Actor> getActors()
-    {
-        assert world != null : "No world defined";
-        return world.getActors();
-    }
-
 
     // ----------------------------------------------------------
     /**
@@ -176,6 +175,30 @@ public class WorldView
     {
         assert world != null : "No world defined";
         world.removeObject(actor);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Removes all actors from this view's world.
+     */
+    public void clear()
+    {
+        ShapeSet shapes = (ShapeSet)getShapes();
+        synchronized (shapes)
+        {
+            for (Shape shape : shapes.toArray())
+            {
+                if (shape instanceof Actor)
+                {
+                    remove((Actor)shape);
+                }
+                else
+                {
+                    remove(shape);
+                }
+            }
+        }
     }
 
 
