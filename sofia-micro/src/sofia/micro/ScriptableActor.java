@@ -7,27 +7,27 @@ import java.lang.reflect.Method;
 /**
  * Represents an Actor that is controlled by a script--that is, a
  * predefined sequence of behavior played out over time.  There are
- * two ways to provide a script for a character: either define a
+ * two ways to provide a script for an actor: either define a
  * {@link #script()} method in a subclass (most common for beginner
  * programmers), or create a script as a separate object and pass
  * it into {@link #setScript(Script)} (more advanced, and more useful
  * if there may be multiple scripts that might be associated with a
- * given class of character).
+ * given actor).
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
  * @version $Date: 2012/08/04 16:40 $
  */
-public class ScriptableCharacter
+public class ScriptableActor
     extends Actor
 {
     //~ Constructor ...........................................................
 
     // ----------------------------------------------------------
     /**
-     * Create a new Character.
+     * Create a new scriptable actor.
      */
-    public ScriptableCharacter()
+    public ScriptableActor()
     {
         super();
     }
@@ -38,16 +38,16 @@ public class ScriptableCharacter
     // ----------------------------------------------------------
     /**
      * This implementation of the act method executes one action in
-     * this character's script.  Normally, scriptable characters do not
+     * this actor's script.  Normally, scriptable actors do not
      * directly call or override this method--if you want to provide act(),
      * more often than not you want to use {@link Actor} as your base
      * class.
      *
      * <p>If, on the other hand, you want to combine the features of
-     * a scriptable character with an actor, you can do that by
+     * a scriptable actor with a custom act() method, you can do that by
      * inheriting from this class and overriding this method.  If you
      * override this method, be sure to call <code>super.act()</code> or
-     * your character will no longer obey its assigned script.</p>
+     * your actor will no longer obey its assigned script.</p>
      */
     @Override
     public void act()
@@ -156,7 +156,7 @@ public class ScriptableCharacter
     // ----------------------------------------------------------
     /**
      * Subclasses can override this method to provide the "script"
-     * for the character to follow.  The default implementation does
+     * for the actor to follow.  The default implementation does
      * nothing (i.e., no script by default).
      */
     public void script()
@@ -167,25 +167,25 @@ public class ScriptableCharacter
 
     // ----------------------------------------------------------
     /**
-     * Associate a script with this character by providing a {@link Script}
+     * Associate a script with this actor by providing a {@link Script}
      * object.  Actions in the script will execute one move at a time as
      * act() is called.  A script value of null will remove any assigned
-     * script for this character.
+     * script for this actor.
      *
      * @param script The script to activate.
-     * @param <MyCharacter> The type of character this script is written
-     *                      for, which should be the same as this character's
+     * @param <MyActor>     The type of actor this script is written
+     *                      for, which should be the same as this actor's
      *                      type (or one of its supertypes).
      */
-    public <MyCharacter extends ScriptableCharacter> void setScript(
-        Script<MyCharacter> script)
+    public <MyActor extends ScriptableActor> void setScript(
+        Script<MyActor> script)
     {
         this.script = script;
         if (this.script != null)
         {
             @SuppressWarnings("unchecked")
-            MyCharacter thisAsMyCharacter = (MyCharacter)this;
-            script.setCharacter(thisAsMyCharacter);
+            MyActor thisAsMyActor = (MyActor)this;
+            script.setActor(thisAsMyActor);
             scriptGate = new java.util.concurrent.Semaphore(0);
             scriptThread = new ScriptThread(this);
         }
@@ -206,24 +206,24 @@ public class ScriptableCharacter
 
     // ----------------------------------------------------------
     /**
-     * Associate a script with this character.  Actions in the script
+     * Associate a script with this actor.  Actions in the script
      * will execute one move at a time as act() is called.  Passed a
-     * value of null will remove any assigned script for this character.
+     * value of null will remove any assigned script for this actor.
      *
      * @param script The script to activate.
      */
     public void setScript(Object script)
     {
-        if (script instanceof ScriptableCharacter)
+        if (script instanceof ScriptableActor)
         {
             if (script == this)
             {
-                setScript(new CharacterScriptAdaptor());
+                setScript(new ActorScriptAdaptor());
             }
             else
             {
                 throw new IllegalArgumentException("Cannot attach a "
-                    + "different ScriptableCharacter as this character's "
+                    + "different ScriptableActor as this actor's "
                     + "script.");
             }
         }
@@ -236,8 +236,8 @@ public class ScriptableCharacter
 
     // ----------------------------------------------------------
     /**
-     * Get the script associated with this character.
-     * @return This character's script.
+     * Get the script associated with this actor.
+     * @return This actor's script.
      */
     public Script<?> getScript()
     {
@@ -249,7 +249,7 @@ public class ScriptableCharacter
 
     // ----------------------------------------------------------
     /**
-     * Triggers one action in this character's script.
+     * Triggers one action in this actor's script.
      */
     protected void scriptStep()
     {
@@ -316,9 +316,9 @@ public class ScriptableCharacter
     private class ScriptThread
         extends Thread
     {
-        public ScriptThread(ScriptableCharacter character)
+        public ScriptThread(ScriptableActor actor)
         {
-            super("Script[" + character.getClass().getSimpleName() + "]");
+            super("Script[" + actor.getClass().getSimpleName() + "]");
         }
 
         @Override
@@ -339,31 +339,31 @@ public class ScriptableCharacter
     // ----------------------------------------------------------
     /**
      * An adaptor class to create a {@link Script} object from
-     * a ScriptableCharacter's script() method.
+     * a ScriptableActor's script() method.
      */
-    private static class CharacterScriptAdaptor
-        implements Script<ScriptableCharacter>
+    private static class ActorScriptAdaptor
+        implements Script<ScriptableActor>
     {
         //~ Fields ............................................................
 
-        private ScriptableCharacter character;
+        private ScriptableActor actor;
 
 
         //~ Methods ...........................................................
 
         // ----------------------------------------------------------
         @Override
-        public void setCharacter(ScriptableCharacter character)
+        public void setActor(ScriptableActor actor)
         {
-            this.character = character;
+            this.actor = actor;
         }
 
 
         // ----------------------------------------------------------
         @Override
-        public ScriptableCharacter getCharacter()
+        public ScriptableActor getActor()
         {
-            return character;
+            return actor;
         }
 
 
@@ -371,7 +371,7 @@ public class ScriptableCharacter
         @Override
         public void script()
         {
-            character.script();
+            actor.script();
         }
     }
 
@@ -382,7 +382,7 @@ public class ScriptableCharacter
      * any object that has a {@code public void script()} method.
      */
     private static class GeneralScriptAdaptor
-        implements Script<ScriptableCharacter>
+        implements Script<ScriptableActor>
     {
         //~ Fields ............................................................
 
@@ -420,7 +420,7 @@ public class ScriptableCharacter
 
         // ----------------------------------------------------------
         @Override
-        public void setCharacter(ScriptableCharacter character)
+        public void setActor(ScriptableActor actor)
         {
             try
             {
@@ -428,21 +428,21 @@ public class ScriptableCharacter
                 try
                 {
                     setter = script.getClass().getMethod(
-                        "setCharacter", Object.class);
+                        "setActor", Object.class);
                 }
                 catch (NoSuchMethodException e)
                 {
                     try
                     {
                         setter = script.getClass().getMethod(
-                            "setCharacter", ScriptableCharacter.class);
+                            "setActor", ScriptableActor.class);
                     }
                     catch (NoSuchMethodException e1)
                     {
                         try
                         {
                             setter = script.getClass().getMethod(
-                                "setCharacter", character.getClass());
+                                "setActor", actor.getClass());
                         }
                         catch (NoSuchMethodException e2)
                         {
@@ -452,7 +452,7 @@ public class ScriptableCharacter
                 }
                 if (setter != null)
                 {
-                    setter.invoke(script, character);
+                    setter.invoke(script, actor);
                 }
             }
             catch (Exception e)
@@ -464,15 +464,15 @@ public class ScriptableCharacter
 
         // ----------------------------------------------------------
         @Override
-        public ScriptableCharacter getCharacter()
+        public ScriptableActor getActor()
         {
             try
             {
-                Method getter = script.getClass().getMethod("getCharacter");
+                Method getter = script.getClass().getMethod("getActor");
                 Object result = getter.invoke(script);
-                if (result instanceof ScriptableCharacter)
+                if (result instanceof ScriptableActor)
                 {
-                    return (ScriptableCharacter)result;
+                    return (ScriptableActor)result;
                 }
                 else
                 {

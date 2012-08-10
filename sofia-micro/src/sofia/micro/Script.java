@@ -2,36 +2,36 @@ package sofia.micro;
 
 //-------------------------------------------------------------------------
 /**
- * Represents a character script--that is, a sequence of actions on a
- * scriptable character to control its behavior.
+ * Represents an actor script--that is, a sequence of actions on a
+ * scriptable actor to control its behavior.
  *
- * @param <MyCharacter> The type of character this script controls.
+ * @param <MyActor> The type of actor this script controls.
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
  * @version $Date: 2012/08/04 16:40 $
  */
-public interface Script<MyCharacter extends ScriptableCharacter>
+public interface Script<MyActor extends ScriptableActor>
 {
     // ----------------------------------------------------------
     /**
-     * Set the character this script controls.
-     * @param character The character this script controls
+     * Set the actor this script controls.
+     * @param actor The actor this script controls
      */
-    public void setCharacter(MyCharacter character);
+    public void setActor(MyActor actor);
 
 
     // ----------------------------------------------------------
     /**
-     * Get the character this script controls.
-     * @return The character for this script.
+     * Get the actor this script controls.
+     * @return The actor for this script.
      */
-    public MyCharacter getCharacter();
+    public MyActor getActor();
 
 
     // ----------------------------------------------------------
     /**
-     * Represents a sequence of actions for a character to carry out.
+     * Represents a sequence of actions for an actor to carry out.
      */
     public void script();
 }
