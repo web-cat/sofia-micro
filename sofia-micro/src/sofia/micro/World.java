@@ -66,7 +66,7 @@ public class World
         org.slf4j.LoggerFactory.getLogger(World.class);
 
 
-    //~ Constructor ...........................................................
+    //~ Constructors ..........................................................
 
     // ----------------------------------------------------------
     /**
@@ -287,23 +287,6 @@ public class World
 
     // ----------------------------------------------------------
     /**
-     * Add an Actor to the world at a specified location.
-     *
-     * <p>This method is identical to {@code add()}, but is provided for
-     * Greenfoot compatibility.</p>
-     *
-     * @param actor The Actor to add.
-     * @param x The x coordinate of the location where the actor is added.
-     * @param y The y coordinate of the location where the actor is added.
-     */
-    public void addObject(Actor actor, int x, int y)
-    {
-        add(actor, x, y);
-    }
-
-
-    // ----------------------------------------------------------
-    /**
      * Remove an Actor from the world.
      * @param actor The Actor to remove.
      */
@@ -348,21 +331,6 @@ public class World
                 }
             }
         }
-    }
-
-
-    // ----------------------------------------------------------
-    /**
-     * Remove an Actor from the world.
-     *
-     * <p>This method is identical to {@code remove()}, but is provided
-     * for Greenfoot compatibility.</p>
-     *
-     * @param actor The Actor to remove.
-     */
-    public void removeObject(Actor actor)
-    {
-        remove(actor);
     }
 
 
@@ -965,29 +933,6 @@ public class World
 
     // ----------------------------------------------------------
     /**
-     * Returns the neighbors to the given location. This method is identical
-     * to {@code getNeighbors()}, but is provided for Greenfoot
-     * compatibility.</p>
-     *
-     * @param actor    The actor whose neighbors will be located.
-     * @param distance Distance in which to look for other objects.
-     * @param diag     Is the distance also diagonal?
-     * @param cls Class of objects to look for (null or Object.class will find
-     *            all classes).
-     * @param <MyActor> The type of object to look for, as specified
-     *                  in the cls parameter.
-     * @return A collection of all neighbors found.
-     */
-    /* package */ <MyActor extends Actor> Set<MyActor> getNeighbours(
-        Actor actor, float distance, boolean diag, Class<MyActor> cls)
-    {
-        failIfNotInView();
-        return getNeighbors(actor, distance, diag, cls);
-    }
-
-
-    // ----------------------------------------------------------
-    /**
      * Return all objects that intersect a straight line from the location at
      * a specified angle. The angle is clockwise.
      *
@@ -1072,6 +1017,10 @@ public class World
 
 
     // ----------------------------------------------------------
+    /**
+     * Get the (Android) view that is displaying this world.
+     * @return The view displaying this world.
+     */
     /* package */ WorldView getWorldView()
     {
         return view;
@@ -1107,7 +1056,11 @@ public class World
 
 
     // ----------------------------------------------------------
-    /* package */ void startRunning()
+    /**
+     * Start (or run, or resume) the world.  This requires that the world
+     * has already been attached to a view.
+     */
+    public void start()
     {
         engine.startRunning();
     }
@@ -1121,7 +1074,11 @@ public class World
 
 
     // ----------------------------------------------------------
-    /* package */ void stopRunning()
+    /**
+     * Stop (or pause running of) the world.  This requires that the world
+     * has already been attached to a view.
+     */
+    public void stop()
     {
         engine.stopRunning();
     }

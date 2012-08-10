@@ -134,24 +134,6 @@ public class WorldView
 
     // ----------------------------------------------------------
     /**
-     * Add an Actor to the world at a specified location.
-     *
-     * <p>This method is identical to {@code add()}, but is provided for
-     * Greenfoot compatibility.</p>
-     *
-     * @param actor The Actor to add.
-     * @param x The x coordinate of the location where the actor is added.
-     * @param y The y coordinate of the location where the actor is added.
-     */
-    public void addObject(Actor actor, int x, int y)
-    {
-        assert world != null : "No world defined";
-        world.addObject(actor, x, y);
-    }
-
-
-    // ----------------------------------------------------------
-    /**
      * Remove an Actor from this view.
      * @param actor The Actor to remove.
      */
@@ -159,22 +141,6 @@ public class WorldView
     {
         assert world != null : "No world defined";
         world.remove(actor);
-    }
-
-
-    // ----------------------------------------------------------
-    /**
-     * Remove an Actor from this view.
-     *
-     * <p>This method is identical to {@code remove()}, but is provided
-     * for Greenfoot compatibility.</p>
-     *
-     * @param actor The Actor to remove.
-     */
-    public void removeObject(Actor actor)
-    {
-        assert world != null : "No world defined";
-        world.removeObject(actor);
     }
 
 

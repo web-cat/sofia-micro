@@ -103,44 +103,10 @@ public class WorldScreen
 
     // ----------------------------------------------------------
     /**
-     * Add an Actor to the world at a specified location.
-     *
-     * <p>This method is identical to {@code add()}, but is provided for
-     * Greenfoot compatibility.</p>
-     *
-     * @param actor The Actor to add.
-     * @param x The x coordinate of the location where the actor is added.
-     * @param y The y coordinate of the location where the actor is added.
-     */
-    public void addObject(Actor actor, int x, int y)
-    {
-        assert getWorldView() != null : "No view defined";
-        getWorldView().addObject(actor, x, y);
-    }
-
-
-    // ----------------------------------------------------------
-    /**
      * Remove an Actor from this screen.
      * @param actor The Actor to remove.
      */
     public void remove(Actor actor)
-    {
-        assert getWorldView() != null : "No view defined";
-        getWorldView().remove(actor);
-    }
-
-
-    // ----------------------------------------------------------
-    /**
-     * Remove an Actor from this screen.
-     *
-     * <p>This method is identical to {@code remove()}, but is provided
-     * for Greenfoot compatibility.</p>
-     *
-     * @param actor The Actor to remove.
-     */
-    public void removeObject(Actor actor)
     {
         assert getWorldView() != null : "No view defined";
         getWorldView().remove(actor);
@@ -165,7 +131,7 @@ public class WorldScreen
     public void runSelected()
     {
         assert getWorld() != null : "No world defined";
-        getWorld().startRunning();
+        getWorld().start();
     }
 
 
@@ -176,7 +142,7 @@ public class WorldScreen
     public void pauseSelected()
     {
         assert getWorld() != null : "No world defined";
-        getWorld().stopRunning();
+        getWorld().stop();
     }
 
 
@@ -188,7 +154,7 @@ public class WorldScreen
     {
         if (getWorld() != null)
         {
-            getWorld().stopRunning();
+            getWorld().stop();
         }
         if (getWorldView() != null)
         {
@@ -204,7 +170,6 @@ public class WorldScreen
      */
     public void speedSelected()
     {
-        System.out.println("WorldScreen.speedSelected()");
         if (getWorldView() == null)
         {
             return;
@@ -261,7 +226,6 @@ public class WorldScreen
     @Override
     public boolean onPrepareOptionsMenu(Menu menu)
     {
-        System.out.println("WorldScreen.onPrepareOptionsMenu()");
         World world = getWorld();
         if (world != null)
         {
@@ -287,7 +251,6 @@ public class WorldScreen
     @Override
     public void onOptionsMenuClosed(Menu menu)
     {
-        System.out.println("WorldScreen.onOptionsMenuClosed()");
         World world = getWorld();
         if (world != null)
         {
@@ -297,7 +260,6 @@ public class WorldScreen
     }
 
 
-    // ----------------------------------------------------------
     //~ Protected Methods .....................................................
 
     // ----------------------------------------------------------
