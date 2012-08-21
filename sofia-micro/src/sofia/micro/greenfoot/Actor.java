@@ -1,6 +1,7 @@
 package sofia.micro.greenfoot;
 
 import java.util.Set;
+import sofia.graphics.Image;
 import sofia.graphics.ImageShape;
 import sofia.graphics.Shape;
 
@@ -12,7 +13,7 @@ import sofia.graphics.Shape;
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
- * @version $Date: 2012/08/06 11:13 $
+ * @version $Date: 2012/08/21 14:19 $
  */
 public class Actor
     extends sofia.micro.Actor
@@ -150,16 +151,20 @@ public class Actor
      */
     public GreenfootImage getGreenfootImage()
     {
-        Shape shape =  getImage();
-        if (shape instanceof ImageShape)
-        {
-            return new GreenfootImage(((ImageShape)shape).getImage());
-        }
-        else
+        Image image = getImage();
+        if (image == null)
         {
             throw new IllegalStateException("getGreenfootImage() called on "
                 + this + ", when this actor's image is not a bitmap.  It is: "
-                + shape);
+                + getShape());
+        }
+        else if (image instanceof GreenfootImage)
+        {
+            return (GreenfootImage)image;
+        }
+        else
+        {
+            return new GreenfootImage(image);
         }
     }
 }

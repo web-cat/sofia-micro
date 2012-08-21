@@ -27,7 +27,7 @@ import android.graphics.RectF;
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
- * @version $Date: 2012/08/06 11:13 $
+ * @version $Date: 2012/08/21 14:19 $
  */
 public class Actor
     extends sofia.micro.internal.DelegatingShape
@@ -210,12 +210,28 @@ public class Actor
 
     // ----------------------------------------------------------
     /**
-     * Returns the image used to represent this actor, as a {@link Shape}
+     * Returns the image used to represent this actor, as an {@link Image}
      * object. This image can be modified to change the actor's appearance.
      *
-     * @return The object's image/shape.
+     * @return The object's image.
      */
-    public Shape getImage()
+    public Image getImage()
+    {
+        Shape delegate = getDelegate();
+        return (delegate instanceof ImageShape)
+            ? ((ImageShape)delegate).getImage()
+            : null;
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Returns the image used to represent this actor, as a {@link Shape}
+     * object. This shape can be modified to change the actor's appearance.
+     *
+     * @return The object's image as a shape.
+     */
+    public Shape getShape()
     {
         return getDelegate();
     }
@@ -685,7 +701,7 @@ public class Actor
     @Override
     public String toString()
     {
-        return getNickName() + "(" + getGridX() + ", " + getGridY() + ")";
+        return getNickName() + "at (" + getGridX() + ", " + getGridY() + ")";
     }
 
 

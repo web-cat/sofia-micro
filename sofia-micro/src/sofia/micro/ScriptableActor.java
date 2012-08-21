@@ -1,13 +1,12 @@
 package sofia.micro;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import sofia.micro.internal.ScriptThread;
 
 //-------------------------------------------------------------------------
 /**
  * Represents an Actor that is controlled by a script--that is, a
  * predefined sequence of behavior played out over time.  There are
- * two ways to provide a script for an actor: either define a
+ * two ways to provide a script for an actor: either override the
  * {@link #script()} method in a subclass (most common for beginner
  * programmers), or create a script as a separate object and pass
  * it into {@link #setScript(Script)} (more advanced, and more useful
@@ -16,20 +15,75 @@ import java.lang.reflect.Method;
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
- * @version $Date: 2012/08/04 16:40 $
+ * @version $Date: 2012/08/21 14:19 $
  */
 public class ScriptableActor
     extends Actor
+    implements Script
 {
-    //~ Constructor ...........................................................
+    //~ Fields ................................................................
+
+    private ScriptThread scriptThread = null;
+    private Script       futureScript = null;
+
+
+    //~ Constructors ..........................................................
 
     // ----------------------------------------------------------
     /**
-     * Create a new scriptable actor.
+     * Create a new scriptable actor. By default, this actor's image will
+     * be scaled to the size of a single grid cell, preserving aspect ratio.
      */
     public ScriptableActor()
     {
         super();
+        setScript(this);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Create a new scriptable actor.  By default, this actor's image will
+     * be scaled to the size of a single grid cell, preserving aspect ratio.
+     * @param nickName The nickname for this actor.
+     */
+    public ScriptableActor(String nickName)
+    {
+        super(nickName);
+        setScript(this);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Create a new scriptable ctor.
+     * @param scaleToCell If true, the Actor's image will be scaled to
+     *                    the dimensions of a single World grid cell, while
+     *                    preserving aspect ratio.  If false, the image
+     *                    will be sized relative to the underlying bitmap
+     *                    or shape.
+     */
+    public ScriptableActor(boolean scaleToCell)
+    {
+        super(scaleToCell);
+        setScript(this);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Create a new scriptable actor.
+     * @param nickName The nickname for this actor.
+     * @param scaleToCell If true, the Actor's image will be scaled to
+     *                    the dimensions of a single World grid cell, while
+     *                    preserving aspect ratio.  If false, the image
+     *                    will be sized relative to the underlying bitmap
+     *                    or shape.
+     */
+    public ScriptableActor(String nickName, boolean scaleToCell)
+    {
+        super(nickName, scaleToCell);
+        setScript(this);
     }
 
 
@@ -64,8 +118,15 @@ public class ScriptableActor
     @Override
     public void move(int distance)
     {
-        super.move(distance);
-        waitForScriptStep();
+        try
+        {
+            ScriptThread.beginAtomicAction();
+            super.move(distance);
+        }
+        finally
+        {
+            ScriptThread.endAtomicAction();
+        }
     }
 
 
@@ -76,8 +137,15 @@ public class ScriptableActor
     @Override
     public void turn(double amount)
     {
-        super.turn(amount);
-        waitForScriptStep();
+        try
+        {
+            ScriptThread.beginAtomicAction();
+            super.turn(amount);
+        }
+        finally
+        {
+            ScriptThread.endAtomicAction();
+        }
     }
 
 
@@ -88,8 +156,15 @@ public class ScriptableActor
     @Override
     public void turnTowards(int x, int y)
     {
-        super.turnTowards(x, y);
-        waitForScriptStep();
+        try
+        {
+            ScriptThread.beginAtomicAction();
+            super.turnTowards(x, y);
+        }
+        finally
+        {
+            ScriptThread.endAtomicAction();
+        }
     }
 
 
@@ -100,8 +175,15 @@ public class ScriptableActor
     @Override
     public void turnTowards(Actor target)
     {
-        super.turnTowards(target);
-        waitForScriptStep();
+        try
+        {
+            ScriptThread.beginAtomicAction();
+            super.turnTowards(target);
+        }
+        finally
+        {
+            ScriptThread.endAtomicAction();
+        }
     }
 
 
@@ -112,8 +194,15 @@ public class ScriptableActor
     @Override
     public void setRotation(double rotation)
     {
-        super.setRotation(rotation);
-        waitForScriptStep();
+        try
+        {
+            ScriptThread.beginAtomicAction();
+            super.setRotation(rotation);
+        }
+        finally
+        {
+            ScriptThread.endAtomicAction();
+        }
     }
 
 
@@ -124,8 +213,15 @@ public class ScriptableActor
     @Override
     public void setGridX(int x)
     {
-        super.setGridX(x);
-        waitForScriptStep();
+        try
+        {
+            ScriptThread.beginAtomicAction();
+            super.setGridX(x);
+        }
+        finally
+        {
+            ScriptThread.endAtomicAction();
+        }
     }
 
 
@@ -136,8 +232,15 @@ public class ScriptableActor
     @Override
     public void setGridY(int y)
     {
-        super.setGridY(y);
-        waitForScriptStep();
+        try
+        {
+            ScriptThread.beginAtomicAction();
+            super.setGridY(y);
+        }
+        finally
+        {
+            ScriptThread.endAtomicAction();
+        }
     }
 
 
@@ -148,8 +251,15 @@ public class ScriptableActor
     @Override
     public void setGridLocation(int x, int y)
     {
-        super.setGridLocation(x, y);
-        waitForScriptStep();
+        try
+        {
+            ScriptThread.beginAtomicAction();
+            super.setGridLocation(x, y);
+        }
+        finally
+        {
+            ScriptThread.endAtomicAction();
+        }
     }
 
 
@@ -167,7 +277,7 @@ public class ScriptableActor
 
     // ----------------------------------------------------------
     /**
-     * Associate a script with this actor by providing a {@link Script}
+     * Associate a script with this actor by providing an {@link ActorScript}
      * object.  Actions in the script will execute one move at a time as
      * act() is called.  A script value of null will remove any assigned
      * script for this actor.
@@ -178,26 +288,46 @@ public class ScriptableActor
      *                      type (or one of its supertypes).
      */
     public <MyActor extends ScriptableActor> void setScript(
-        Script<MyActor> script)
+        ActorScript<MyActor> script)
     {
-        this.script = script;
-        if (this.script != null)
+        if (script != null)
         {
             @SuppressWarnings("unchecked")
             MyActor thisAsMyActor = (MyActor)this;
             script.setActor(thisAsMyActor);
-            scriptGate = new java.util.concurrent.Semaphore(0);
-            scriptThread = new ScriptThread(this);
         }
-        else
+        setScript((Script)script);
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Associate a script with this actor by providing a {@link Script}
+     * object.  Actions in the script will execute one move at a time as
+     * act() is called.  A script value of null will remove any assigned
+     * script for this actor.
+     *
+     * @param script The script to activate.
+     */
+    public void setScript(Script script)
+    {
+        if (getWorld() == null)
         {
-            if (scriptThread != null)
-            {
-                // Stop the thread before resetting the reference
-                scriptThread.interrupt();
-                scriptThread = null;
-            }
-            scriptGate = null;
+            futureScript = script;
+            return;
+        }
+
+        if (scriptThread != null)
+        {
+            // Stop the thread before resetting the reference
+            scriptThread.endScript();
+            scriptThread = null;
+        }
+
+        if (script != null)
+        {
+            scriptThread = new ScriptThread(this, script);
+            scriptThread.start();
         }
         // TODO: add some kind of "finishActing()" and "isFinished()"
         // pair of methods to allow actors to be "stopped" in general?
@@ -206,42 +336,24 @@ public class ScriptableActor
 
     // ----------------------------------------------------------
     /**
-     * Associate a script with this actor.  Actions in the script
-     * will execute one move at a time as act() is called.  Passed a
-     * value of null will remove any assigned script for this actor.
-     *
-     * @param script The script to activate.
+     * Get the script associated with this actor.
+     * @return This actor's script.
      */
-    public void setScript(Object script)
+    public Script getScript()
     {
-        if (script instanceof ScriptableActor)
-        {
-            if (script == this)
-            {
-                setScript(new ActorScriptAdaptor());
-            }
-            else
-            {
-                throw new IllegalArgumentException("Cannot attach a "
-                    + "different ScriptableActor as this actor's "
-                    + "script.");
-            }
-        }
-        else
-        {
-            setScript(new GeneralScriptAdaptor(script));
-        }
+        return scriptThread == null
+            ? null
+            : scriptThread.getScript();
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Get the script associated with this actor.
-     * @return This actor's script.
+     * Stop any currently executing script associated with this actor.
      */
-    public Script<?> getScript()
+    public void stopScript()
     {
-        return script;
+        setScript(null);
     }
 
 
@@ -259,271 +371,28 @@ public class ScriptableActor
             {
                 scriptThread.start();
             }
-            else if (scriptThread.getState() == Thread.State.TERMINATED)
+
+            if (scriptThread.getState() == Thread.State.TERMINATED)
             {
                 scriptThread = null;
-                scriptGate = null;
             }
             else
             {
-                scriptGate.release();
+                scriptThread.resumeScript();
             }
         }
     }
 
 
     // ----------------------------------------------------------
-    /**
-     * Pauses the script thread to wait for the next step.
-     */
-    protected void waitForScriptStep()
+    @Override
+    /* package */ void setWorld(World world)
     {
-        if (scriptThread != null)
+        super.setWorld(world);
+        if (futureScript != null)
         {
-            if (Thread.currentThread() == scriptThread)
-            {
-                if (Thread.interrupted())
-                {
-                    throw new RuntimeInterruptedException();
-                }
-                try
-                {
-                    scriptGate.acquire();
-                }
-                catch (InterruptedException e)
-                {
-                    scriptThread.interrupt();
-                    throw new RuntimeInterruptedException();
-                }
-            }
+            setScript(futureScript);
+            futureScript = null;
         }
     }
-
-
-    //~ Private Methods .......................................................
-
-    // ----------------------------------------------------------
-    private static class RuntimeInterruptedException
-        extends RuntimeException
-    {
-        private static final long serialVersionUID = 2922423860480121589L;
-
-        // Nothing else needed
-    }
-
-
-    // ----------------------------------------------------------
-    private class ScriptThread
-        extends Thread
-    {
-        public ScriptThread(ScriptableActor actor)
-        {
-            super("Script[" + actor.getClass().getSimpleName() + "]");
-        }
-
-        @Override
-        public void run()
-        {
-            try
-            {
-                script.script();
-            }
-            catch (RuntimeInterruptedException e)
-            {
-                // script stopped externally, so let method returns
-            }
-        }
-    }
-
-
-    // ----------------------------------------------------------
-    /**
-     * An adaptor class to create a {@link Script} object from
-     * a ScriptableActor's script() method.
-     */
-    private static class ActorScriptAdaptor
-        implements Script<ScriptableActor>
-    {
-        //~ Fields ............................................................
-
-        private ScriptableActor actor;
-
-
-        //~ Methods ...........................................................
-
-        // ----------------------------------------------------------
-        @Override
-        public void setActor(ScriptableActor actor)
-        {
-            this.actor = actor;
-        }
-
-
-        // ----------------------------------------------------------
-        @Override
-        public ScriptableActor getActor()
-        {
-            return actor;
-        }
-
-
-        // ----------------------------------------------------------
-        @Override
-        public void script()
-        {
-            actor.script();
-        }
-    }
-
-
-    // ----------------------------------------------------------
-    /**
-     * An adaptor class to create a {@link Script} object from
-     * any object that has a {@code public void script()} method.
-     */
-    private static class GeneralScriptAdaptor
-        implements Script<ScriptableActor>
-    {
-        //~ Fields ............................................................
-
-        private Object script;
-        private Method scriptMethod;
-
-
-        //~ Constructor .......................................................
-
-        // ----------------------------------------------------------
-        /**
-         * Create a new adaptor.  Throws an IllegalArgumentException if
-         * the provided argument does not provide a script() method.
-         * @param script An object that provides a script() method.
-         */
-        public GeneralScriptAdaptor(Object script)
-        {
-            this.script = script;
-            try
-            {
-                scriptMethod = script.getClass().getMethod("script");
-            }
-            catch (SecurityException e)
-            {
-                throw new IllegalArgumentException(e);
-            }
-            catch (NoSuchMethodException e)
-            {
-                throw new IllegalArgumentException(e);
-            }
-        }
-
-
-        //~ Methods ...........................................................
-
-        // ----------------------------------------------------------
-        @Override
-        public void setActor(ScriptableActor actor)
-        {
-            try
-            {
-                Method setter = null;
-                try
-                {
-                    setter = script.getClass().getMethod(
-                        "setActor", Object.class);
-                }
-                catch (NoSuchMethodException e)
-                {
-                    try
-                    {
-                        setter = script.getClass().getMethod(
-                            "setActor", ScriptableActor.class);
-                    }
-                    catch (NoSuchMethodException e1)
-                    {
-                        try
-                        {
-                            setter = script.getClass().getMethod(
-                                "setActor", actor.getClass());
-                        }
-                        catch (NoSuchMethodException e2)
-                        {
-                            // Ignore, not setter found
-                        }
-                    }
-                }
-                if (setter != null)
-                {
-                    setter.invoke(script, actor);
-                }
-            }
-            catch (Exception e)
-            {
-                throwException(e);
-            }
-        }
-
-
-        // ----------------------------------------------------------
-        @Override
-        public ScriptableActor getActor()
-        {
-            try
-            {
-                Method getter = script.getClass().getMethod("getActor");
-                Object result = getter.invoke(script);
-                if (result instanceof ScriptableActor)
-                {
-                    return (ScriptableActor)result;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch (Exception e)
-            {
-                throwException(e);
-                return null; // Unreachable, but keeps compiler happy
-            }
-        }
-
-
-        // ----------------------------------------------------------
-        @Override
-        public void script()
-        {
-            try
-            {
-                scriptMethod.invoke(script);
-            }
-            catch (Exception e)
-            {
-                throwException(e);
-            }
-        }
-
-
-        // ----------------------------------------------------------
-        private void throwException(Throwable e)
-        {
-            if (e instanceof RuntimeException)
-            {
-                throw (RuntimeException)e;
-            }
-            else if (e instanceof InvocationTargetException)
-            {
-                throwException(e.getCause());
-            }
-            else
-            {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-
-    //~ Fields ................................................................
-
-    private Script<?> script;
-    private ScriptThread scriptThread = null;
-    private java.util.concurrent.Semaphore scriptGate = null;
 }
