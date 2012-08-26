@@ -1,0 +1,88 @@
+<project name="sofia-micro" default="doc">
+
+  <property name="doclava.version" value="1.0.6" />
+  <property name="doclava.lib.dir"
+    value="/Users/edwards/Documents/Teaching/android/doclava"/>
+  <property name="doclava.jar"
+    value="${doclava.lib.dir}/doclava-${doclava.version}.jar"/>
+
+  <target name="timestamp">
+    <tstamp>
+        <format property="updated.date" pattern="EEE, MMM d, yyyy" />
+        <format property="updated.time" pattern="hh:mm aa z" />
+    </tstamp>
+  </target>
+
+  <target name="doc" depends="doclava.sofia"/>
+
+  <target name="doclava.sofia" depends="timestamp">
+    <javadoc
+      packagenames="sofia.*"
+      excludepackagenames="sofia.internal,sofia.*.internal"
+      destdir="api"
+      sourcepath="src"
+      author="true"
+      version="true"
+      access="protected"
+      maxmemory="512m"
+      docletpath="${doclava.jar}">
+      <doclet name="com.google.doclava.Doclava">
+        <param name="-stubs" value="build/stubs" />
+        <param name="-hdf"/>
+          <param name="project.name"/>
+          <param name="Sofia Library"/>
+        <param name="-title"/>
+          <param name="Sofia Library"/>
+        <!--
+        <param name="-assetsdir" /> <param name="reference"/>
+        <param name="-templatedir" />
+          <param name="${doclava.lib.dir}/build/tools/droiddoc/templates-sdk" />
+        <param name="-templatedir" />
+          <param name="${doclava.lib.dir}/build/tools/droiddoc/templates" />
+        <param name="-htmldir" />
+          <param name="${doclava.lib.dir}/frameworks/base/docs/html" />
+          -->
+        <!-- federation -->
+        <param name="-federate" />
+          <param name="JDK"/>
+          <param name="http://docs.oracle.com/javase/7/docs/api/" />
+        <param name="-federationxml"/>
+          <param name="JDK"/>
+          <param name="http://doclava.googlecode.com/svn/static/api/openjdk-6.xml"/>
+        <param name="-federate" />
+          <param name="Android"/>
+          <param name="http://d.android.com/reference/" />
+        <param name="-federationxml"/>
+          <param name="Android"/>
+          <param name="http://doclava.googlecode.com/svn/static/api/android-8.xml"/>
+      </doclet>
+      <classpath>
+        <fileset dir="bin"/>
+        <fileset dir="../../sofia-core/bin"/>
+        <fileset dir="../../sofia-graphics/bin"/>
+        <fileset dir="../../sofia-maps/bin"/>
+        <fileset dir="../../sofia-demos/bin"/>
+        <fileset dir="../.." includes="sofia-*/libs/*.jar" />
+        <fileset dir="/usr/local/android-sdk-macosx">
+          <include name="platforms/android-8/android.jar"/>
+          <include name="platforms/android-8/data/layoutlib.jar"/>
+          <include name="add-ons/addon-google_apis-google_inc_-8/libs/*.jar"/>
+        </fileset>
+      </classpath>
+      <bootclasspath>
+        <dirset dir="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/">
+          <include name="*.jar"/>
+        </dirset>
+      </bootclasspath>
+      <sourcepath>
+        <dirset dir="../../sofia-core/src/" />
+        <dirset dir="../../sofia-graphics/src/" />
+        <dirset dir="../../sofia-maps/src/" />
+        <dirset dir="src/" />
+        <dirset dir="../../sofia-demos/src/" />
+      </sourcepath>
+    </javadoc>
+    <delete dir="build" />
+  </target>
+
+</project>
