@@ -1,6 +1,6 @@
 package sofia.micro.jeroo;
 
-import sofia.micro.ScriptableWorld;
+import sofia.micro.ProgrammableWorld;
 
 //-------------------------------------------------------------------------
 /**
@@ -11,7 +11,7 @@ import sofia.micro.ScriptableWorld;
  * @version $Date: 2012/08/21 14:19 $
  */
 public class Island
-    extends ScriptableWorld
+    extends ProgrammableWorld
 {
     //~ Constructors ..........................................................
 

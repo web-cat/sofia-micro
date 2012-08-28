@@ -53,6 +53,7 @@ public class World
 
     private Engine engine;
     private static final int MAX_SPEED = 100;
+    private static World mostRecentlyCreated = null;
 
     /** Error message to display when trying to use methods that requires
      * the actor be in a world.
@@ -186,6 +187,7 @@ public class World
     public World(int width, int height, int scaledCellSize, boolean scaleToFit,
         boolean backgroundIsForCell)
     {
+        mostRecentlyCreated = this;
         this.width = width;
         this.height = height;
         this.backgroundIsForCell = backgroundIsForCell;
@@ -1095,6 +1097,13 @@ public class World
     /* package */ void resumeRunningIfNecessary()
     {
         engine.resumeRunningIfNecessary();
+    }
+
+
+    // ----------------------------------------------------------
+    /* package */ World getMostRecentlyCreated()
+    {
+        return mostRecentlyCreated;
     }
 
 

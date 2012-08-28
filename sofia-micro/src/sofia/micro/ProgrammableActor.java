@@ -1,78 +1,78 @@
 package sofia.micro;
 
-import sofia.micro.internal.ScriptThread;
+import sofia.micro.internal.ProgramThread;
 
 //-------------------------------------------------------------------------
 /**
- * Represents an Actor that is controlled by a script--that is, a
+ * Represents an Actor that is controlled by its own program--that is, a
  * predefined sequence of behavior played out over time.  There are
- * two ways to provide a script for an actor: either override the
- * {@link #script()} method in a subclass (most common for beginner
+ * two ways to provide a program for an actor: either override the
+ * {@link #myProgram()} method in a subclass (most common for beginner
  * programmers), or create a script as a separate object and pass
- * it into {@link #setScript(Script)} (more advanced, and more useful
- * if there may be multiple scripts that might be associated with a
+ * it into {@link #setProgram(Program)} (more advanced, and more useful
+ * if there may be multiple programs that might be associated with a
  * given actor).
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
  * @version $Date: 2012/08/21 14:19 $
  */
-public class ScriptableActor
+public class ProgrammableActor
     extends Actor
-    implements Script
+    implements Program
 {
     //~ Fields ................................................................
 
-    private ScriptThread scriptThread = null;
-    private Script       futureScript = null;
+    private ProgramThread programThread = null;
+    private Program       futureProgram = null;
 
 
     //~ Constructors ..........................................................
 
     // ----------------------------------------------------------
     /**
-     * Create a new scriptable actor. By default, this actor's image will
+     * Create a new programmable actor. By default, this actor's image will
      * be scaled to the size of a single grid cell, preserving aspect ratio.
      */
-    public ScriptableActor()
+    public ProgrammableActor()
     {
         super();
-        setScript(this);
+        setProgram(this);
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Create a new scriptable actor.  By default, this actor's image will
+     * Create a new programmable actor.  By default, this actor's image will
      * be scaled to the size of a single grid cell, preserving aspect ratio.
      * @param nickName The nickname for this actor.
      */
-    public ScriptableActor(String nickName)
+    public ProgrammableActor(String nickName)
     {
         super(nickName);
-        setScript(this);
+        setProgram(this);
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Create a new scriptable ctor.
+     * Create a new programmable ctor.
      * @param scaleToCell If true, the Actor's image will be scaled to
      *                    the dimensions of a single World grid cell, while
      *                    preserving aspect ratio.  If false, the image
      *                    will be sized relative to the underlying bitmap
      *                    or shape.
      */
-    public ScriptableActor(boolean scaleToCell)
+    public ProgrammableActor(boolean scaleToCell)
     {
         super(scaleToCell);
-        setScript(this);
+        setProgram(this);
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Create a new scriptable actor.
+     * Create a new programmable actor.
      * @param nickName The nickname for this actor.
      * @param scaleToCell If true, the Actor's image will be scaled to
      *                    the dimensions of a single World grid cell, while
@@ -80,10 +80,10 @@ public class ScriptableActor
      *                    will be sized relative to the underlying bitmap
      *                    or shape.
      */
-    public ScriptableActor(String nickName, boolean scaleToCell)
+    public ProgrammableActor(String nickName, boolean scaleToCell)
     {
         super(nickName, scaleToCell);
-        setScript(this);
+        setProgram(this);
     }
 
 
@@ -92,22 +92,22 @@ public class ScriptableActor
     // ----------------------------------------------------------
     /**
      * This implementation of the act method executes one action in
-     * this actor's script.  Normally, scriptable actors do not
+     * this actor's program.  Normally, programmable actors do not
      * directly call or override this method--if you want to provide act(),
      * more often than not you want to use {@link Actor} as your base
      * class.
      *
      * <p>If, on the other hand, you want to combine the features of
-     * a scriptable actor with a custom act() method, you can do that by
+     * a programmable actor with a custom act() method, you can do that by
      * inheriting from this class and overriding this method.  If you
      * override this method, be sure to call <code>super.act()</code> or
-     * your actor will no longer obey its assigned script.</p>
+     * your actor will no longer obey its assigned program.</p>
      */
     @Override
     public void act()
     {
         super.act();
-        scriptStep();
+        programStep();
     }
 
 
@@ -120,12 +120,12 @@ public class ScriptableActor
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.move(distance);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -139,12 +139,12 @@ public class ScriptableActor
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.turn(amount);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -158,12 +158,12 @@ public class ScriptableActor
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.turnTowards(x, y);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -177,12 +177,12 @@ public class ScriptableActor
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.turnTowards(target);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -196,12 +196,12 @@ public class ScriptableActor
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.setRotation(rotation);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -215,12 +215,12 @@ public class ScriptableActor
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.setGridX(x);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -234,12 +234,12 @@ public class ScriptableActor
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.setGridY(y);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -253,23 +253,23 @@ public class ScriptableActor
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.setGridLocation(x, y);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Subclasses can override this method to provide the "script"
+     * Subclasses can override this method to provide the "program"
      * for the actor to follow.  The default implementation does
-     * nothing (i.e., no script by default).
+     * nothing (i.e., no program by default).
      */
-    public void script()
+    public void myProgram()
     {
         // Intentionally empty
     }
@@ -277,57 +277,57 @@ public class ScriptableActor
 
     // ----------------------------------------------------------
     /**
-     * Associate a script with this actor by providing an {@link ActorScript}
-     * object.  Actions in the script will execute one move at a time as
-     * act() is called.  A script value of null will remove any assigned
-     * script for this actor.
+     * Associate a program with this actor by providing an {@link ActorProgram}
+     * object.  Actions in the program will execute one move at a time as
+     * act() is called.  A program value of null will remove any assigned
+     * program for this actor.
      *
-     * @param script The script to activate.
-     * @param <MyActor>     The type of actor this script is written
+     * @param program       The program to activate.
+     * @param <MyActor>     The type of actor this program is written
      *                      for, which should be the same as this actor's
      *                      type (or one of its supertypes).
      */
-    public <MyActor extends ScriptableActor> void setScript(
-        ActorScript<MyActor> script)
+    public <MyActor extends ProgrammableActor> void setProgram(
+        ActorProgram<MyActor> program)
     {
-        if (script != null)
+        if (program != null)
         {
             @SuppressWarnings("unchecked")
             MyActor thisAsMyActor = (MyActor)this;
-            script.setActor(thisAsMyActor);
+            program.setActor(thisAsMyActor);
         }
-        setScript((Script)script);
+        setProgram((Program)program);
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Associate a script with this actor by providing a {@link Script}
-     * object.  Actions in the script will execute one move at a time as
-     * act() is called.  A script value of null will remove any assigned
-     * script for this actor.
+     * Associate a program with this actor by providing a {@link Program}
+     * object.  Actions in the program will execute one move at a time as
+     * act() is called.  A program value of null will remove any assigned
+     * program for this actor.
      *
-     * @param script The script to activate.
+     * @param program The program to activate.
      */
-    public void setScript(Script script)
+    public void setProgram(Program program)
     {
         if (getWorld() == null)
         {
-            futureScript = script;
+            futureProgram = program;
             return;
         }
 
-        if (scriptThread != null)
+        if (programThread != null)
         {
             // Stop the thread before resetting the reference
-            scriptThread.endScript();
-            scriptThread = null;
+            programThread.endProgram();
+            programThread = null;
         }
 
-        if (script != null)
+        if (program != null)
         {
-            scriptThread = new ScriptThread(this, script);
-            scriptThread.start();
+            programThread = new ProgramThread(this, program);
+            programThread.start();
         }
         // TODO: add some kind of "finishActing()" and "isFinished()"
         // pair of methods to allow actors to be "stopped" in general?
@@ -336,24 +336,24 @@ public class ScriptableActor
 
     // ----------------------------------------------------------
     /**
-     * Get the script associated with this actor.
-     * @return This actor's script.
+     * Get the program associated with this actor.
+     * @return This actor's program.
      */
-    public Script getScript()
+    public Program getProgram()
     {
-        return scriptThread == null
+        return programThread == null
             ? null
-            : scriptThread.getScript();
+            : programThread.getProgram();
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Stop any currently executing script associated with this actor.
+     * Stop any currently executing program associated with this actor.
      */
-    public void stopScript()
+    public void stopProgram()
     {
-        setScript(null);
+        setProgram(null);
     }
 
 
@@ -361,24 +361,24 @@ public class ScriptableActor
 
     // ----------------------------------------------------------
     /**
-     * Triggers one action in this actor's script.
+     * Triggers one action in this actor's program.
      */
-    protected void scriptStep()
+    protected void programStep()
     {
-        if (scriptThread != null)
+        if (programThread != null)
         {
-            if (scriptThread.getState() == Thread.State.NEW)
+            if (programThread.getState() == Thread.State.NEW)
             {
-                scriptThread.start();
+                programThread.start();
             }
 
-            if (scriptThread.getState() == Thread.State.TERMINATED)
+            if (programThread.getState() == Thread.State.TERMINATED)
             {
-                scriptThread = null;
+                programThread = null;
             }
             else
             {
-                scriptThread.resumeScript();
+                programThread.resumeProgram();
             }
         }
     }
@@ -389,10 +389,10 @@ public class ScriptableActor
     /* package */ void setWorld(World world)
     {
         super.setWorld(world);
-        if (futureScript != null)
+        if (futureProgram != null)
         {
-            setScript(futureScript);
-            futureScript = null;
+            setProgram(futureProgram);
+            futureProgram = null;
         }
     }
 }

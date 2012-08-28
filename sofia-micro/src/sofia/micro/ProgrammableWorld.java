@@ -2,30 +2,30 @@ package sofia.micro;
 
 import sofia.graphics.Color;
 import sofia.graphics.Image;
-import sofia.micro.internal.ScriptThread;
+import sofia.micro.internal.ProgramThread;
 
 //-------------------------------------------------------------------------
 /**
- * Represents a World that is controlled by a script--that is, a
+ * Represents a World that is controlled by a program--that is, a
  * predefined sequence of behavior played out over time.  There are
- * two ways to provide a script: either override the {@link #script()}
+ * two ways to provide a program: either override the {@link #myProgram()}
  * method in a subclass (most common for beginner programmers), or create a
- * script as a separate object and pass it into {@link #setScript(Script)}
- * (more advanced, and more useful if there may be multiple scripts that
+ * program as a separate object and pass it into {@link #setProgram(Program)}
+ * (more advanced, and more useful if there may be multiple program that
  * might be associated with a given world).
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
  * @version $Date: 2012/08/21 14:19 $
  */
-public class ScriptableWorld
+public class ProgrammableWorld
     extends World
-    implements Script
+    implements Program
 {
     //~ Fields ................................................................
 
-    private ScriptThread scriptThread = null;
-    private Script       futureScript = null;
+    private ProgramThread programThread = null;
+    private Program       futureProgram = null;
 
 
     //~ Constructors ..........................................................
@@ -43,10 +43,10 @@ public class ScriptableWorld
      * <p>If an image based on the world's class name exists, it will be
      * used as the background for each cell.</p>
      */
-    public ScriptableWorld()
+    public ProgrammableWorld()
     {
         super();
-        setScript(this);
+        setProgram(this);
     }
 
 
@@ -62,10 +62,10 @@ public class ScriptableWorld
      * @param width  The width of the world (in cells).
      * @param height The height of the world (in cells).
      */
-    public ScriptableWorld(int width, int height)
+    public ProgrammableWorld(int width, int height)
     {
         super(width, height);
-        setScript(this);
+        setProgram(this);
     }
 
 
@@ -85,10 +85,10 @@ public class ScriptableWorld
      * @param scaledCellSize For rendering bitmaps, treat each cell as if
      *                       it were a square of this many pixels on each side.
      */
-    public ScriptableWorld(int width, int height, int scaledCellSize)
+    public ProgrammableWorld(int width, int height, int scaledCellSize)
     {
         super(width, height, scaledCellSize);
-        setScript(this);
+        setProgram(this);
     }
 
 
@@ -116,11 +116,11 @@ public class ScriptableWorld
      *                       less, even if this means some of the grid will
      *                       be clipped by the screen boundaries.
      */
-    public ScriptableWorld(
+    public ProgrammableWorld(
         int width, int height, int scaledCellSize, boolean scaleToFit)
     {
         super(width, height, scaledCellSize, scaleToFit);
-        setScript(this);
+        setProgram(this);
     }
 
 
@@ -150,7 +150,7 @@ public class ScriptableWorld
      *                       or stretched to fit the entire world grid (if
      *                       false).
      */
-    public ScriptableWorld(
+    public ProgrammableWorld(
         int width,
         int height,
         int scaledCellSize,
@@ -158,7 +158,7 @@ public class ScriptableWorld
         boolean backgroundIsForCell)
     {
         super(width, height, scaledCellSize, scaleToFit, backgroundIsForCell);
-        setScript(this);
+        setProgram(this);
     }
 
 
@@ -173,12 +173,12 @@ public class ScriptableWorld
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.add(actor);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -192,12 +192,12 @@ public class ScriptableWorld
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.add(actor, x, y);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -208,12 +208,12 @@ public class ScriptableWorld
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.remove(actor);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -221,22 +221,22 @@ public class ScriptableWorld
     // ----------------------------------------------------------
     /**
      * This implementation of the act method executes one action in
-     * this world's script.  Normally, scriptable worlds do not
+     * this world's program.  Normally, programmable worlds do not
      * directly call or override this method--if you want to provide act(),
      * more often than not you want to use {@link World} as your base
      * class.
      *
      * <p>If, on the other hand, you want to combine the features of
-     * a scriptable world with a custom act() method, you can do that by
+     * a programmable world with a custom act() method, you can do that by
      * inheriting from this class and overriding this method.  If you
      * override this method, be sure to call <code>super.act()</code> or
-     * your world will no longer obey its assigned script.</p>
+     * your world will no longer obey its assigned program.</p>
      */
     @Override
     public void act()
     {
         super.act();
-        scriptStep();
+        programStep();
     }
 
 
@@ -249,12 +249,12 @@ public class ScriptableWorld
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.setGridColor(gridColor);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -268,12 +268,12 @@ public class ScriptableWorld
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.setBackgroundColor(backgroundColor);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -287,12 +287,12 @@ public class ScriptableWorld
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.setCellBackground(background);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -306,23 +306,23 @@ public class ScriptableWorld
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
             super.setWorldBackground(background);
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Subclasses can override this method to provide the "script"
-     * for the actor to follow.  The default implementation does
-     * nothing (i.e., no script by default).
+     * Subclasses can override this method to provide the "program"
+     * for the world to follow.  The default implementation does
+     * nothing (i.e., no program by default).
      */
-    public void script()
+    public void myProgram()
     {
         // Intentionally empty
     }
@@ -330,32 +330,32 @@ public class ScriptableWorld
 
     // ----------------------------------------------------------
     /**
-     * Associate a script with this world by providing a {@link Script}
-     * object.  Actions in the script will execute one move at a time as
-     * act() is called.  A script value of null will remove any assigned
-     * script for this world.
+     * Associate a program with this world by providing a {@link Program}
+     * object.  Actions in the program will execute one move at a time as
+     * act() is called.  A program value of null will remove any assigned
+     * program for this world.
      *
-     * @param script The script to activate.
+     * @param program The program to activate.
      */
-    public void setScript(Script script)
+    public void setProgram(Program program)
     {
         if (getWorldView() == null)
         {
-            futureScript = script;
+            futureProgram = program;
             return;
         }
 
-        if (scriptThread != null)
+        if (programThread != null)
         {
             // Stop the thread before resetting the reference
-            scriptThread.endScript();
-            scriptThread = null;
+            programThread.endProgram();
+            programThread = null;
         }
 
-        if (script != null)
+        if (program != null)
         {
-            scriptThread = new ScriptThread(this, script);
-            scriptThread.start();
+            programThread = new ProgramThread(this, program);
+            programThread.start();
         }
         // TODO: add some kind of "finishActing()" and "isFinished()"
         // pair of methods to allow actors to be "stopped" in general?
@@ -364,24 +364,24 @@ public class ScriptableWorld
 
     // ----------------------------------------------------------
     /**
-     * Get the script associated with this actor.
-     * @return This actor's script.
+     * Get the program associated with this world.
+     * @return This world's program.
      */
-    public Script getScript()
+    public Program getProgram()
     {
-        return scriptThread == null
+        return programThread == null
             ? null
-            : scriptThread.getScript();
+            : programThread.getProgram();
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Stop any currently executing script associated with this actor.
+     * Stop any currently executing program associated with this world.
      */
-    public void stopScript()
+    public void stopProgram()
     {
-        setScript(null);
+        setProgram(null);
     }
 
 
@@ -389,24 +389,24 @@ public class ScriptableWorld
 
     // ----------------------------------------------------------
     /**
-     * Triggers one action in this actor's script.
+     * Triggers one action in this world's program.
      */
-    protected void scriptStep()
+    protected void programStep()
     {
-        if (scriptThread != null)
+        if (programThread != null)
         {
-            if (scriptThread.getState() == Thread.State.NEW)
+            if (programThread.getState() == Thread.State.NEW)
             {
-                scriptThread.start();
+                programThread.start();
             }
 
-            if (scriptThread.getState() == Thread.State.TERMINATED)
+            if (programThread.getState() == Thread.State.TERMINATED)
             {
-                scriptThread = null;
+                programThread = null;
             }
             else
             {
-                scriptThread.resumeScript();
+                programThread.resumeProgram();
             }
         }
     }
@@ -417,10 +417,10 @@ public class ScriptableWorld
     /* package */ void setWorldView(WorldView view)
     {
         super.setWorldView(view);
-        if (futureScript != null)
+        if (futureProgram != null)
         {
-            setScript(futureScript);
-            futureScript = null;
+            setProgram(futureProgram);
+            futureProgram = null;
         }
     }
 }

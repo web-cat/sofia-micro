@@ -1,53 +1,54 @@
 package sofia.micro.internal;
 
-import sofia.micro.Script;
+import sofia.micro.Program;
 
 //-------------------------------------------------------------------------
 /**
- * A thread for running a "script" associated with a scriptable actor or
+ * A thread for running a "program" associated with a programmable actor or
  * world.
  *
  * @author  Stephen Edwards
  * @author  Last changed by $Author: edwards $
  * @version $Date: 2012/08/21 14:19 $
  */
-public class ScriptThread
+public class ProgramThread
     extends Thread
 {
     //~ Fields ................................................................
 
-    private java.util.concurrent.Semaphore scriptGate =
+    private java.util.concurrent.Semaphore programGate =
         new java.util.concurrent.Semaphore(0);
     private volatile int depth = -1;
-    private Script script;
+    private Program program;
 
 
     //~ Constructors ..........................................................
 
     // ----------------------------------------------------------
     /**
-     * Create a new script thread.
+     * Create a new program thread.
      * @param threadName The name of this thread (for debugging).
-     * @param script     The script this thread will run.
+     * @param program    The program this thread will run.
      */
-    public ScriptThread(String threadName, Script script)
+    public ProgramThread(String threadName, Program program)
     {
         super(threadName);
-        this.script = script;
+        this.program = program;
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Create a new script thread.
-     * @param namedAfter The object controlled by this script, which is
+     * Create a new program thread.
+     * @param namedAfter The object controlled by this program, which is
      *                   used to determining this thread's name (for
      *                   debugging).
-     * @param script     The script this thread will run.
+     * @param program    The program this thread will run.
      */
-    public ScriptThread(Object namedAfter, Script script)
+    public ProgramThread(Object namedAfter, Program program)
     {
-        this("Script[" + namedAfter.getClass().getSimpleName() + "]", script);
+        this(
+            "Program[" + namedAfter.getClass().getSimpleName() + "]", program);
     }
 
 
@@ -60,10 +61,10 @@ public class ScriptThread
         try
         {
             // Immediately park this thread until we are resumed.
-            pauseScript();
-            script.script();
+            pauseProgram();
+            program.myProgram();
         }
-        catch (ScriptTermination e)
+        catch (ProgramTermination e)
         {
             // script stopped externally, so let method return
         }
@@ -77,12 +78,12 @@ public class ScriptThread
 
     // ----------------------------------------------------------
     /**
-     * Get the script associated with this thread.
-     * @return This thread's script.
+     * Get the program associated with this thread.
+     * @return This thread's program.
      */
-    public Script getScript()
+    public Program getProgram()
     {
-        return script;
+        return program;
     }
 
 
@@ -105,9 +106,9 @@ public class ScriptThread
      */
     public static void beginAtomicAction()
     {
-        if (Thread.currentThread() instanceof ScriptThread)
+        if (Thread.currentThread() instanceof ProgramThread)
         {
-            ((ScriptThread)Thread.currentThread()).beginMyAtomicAction();
+            ((ProgramThread)Thread.currentThread()).beginMyAtomicAction();
         }
     }
 
@@ -119,7 +120,7 @@ public class ScriptThread
     public void endMyAtomicAction()
     {
         depth--;
-        pauseScript();
+        pauseProgram();
     }
 
 
@@ -130,73 +131,73 @@ public class ScriptThread
      */
     public static void endAtomicAction()
     {
-        if (Thread.currentThread() instanceof ScriptThread)
+        if (Thread.currentThread() instanceof ProgramThread)
         {
-            ((ScriptThread)Thread.currentThread()).endMyAtomicAction();
+            ((ProgramThread)Thread.currentThread()).endMyAtomicAction();
         }
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Pause the script that is being executed by this thread, so that it
+     * Pause the program that is being executed by this thread, so that it
      * can be resumed again later.
      */
-    private void pauseScript()
+    private void pauseProgram()
     {
         if (currentThread() != this)
         {
             throw new IllegalStateException(
-                "pauseThisScript() called from outside this ScriptThread."
+                "pauseProgram() called from outside this ScriptThread."
                 + "  Caller = " + currentThread());
         }
 
         if (isInterrupted())
         {
-            throw new ScriptTermination();
+            throw new ProgramTermination();
         }
         try
         {
             if (depth <= 0)
             {
                 depth = -1;
-                scriptGate.acquire();
+                programGate.acquire();
             }
         }
         catch (InterruptedException e)
         {
             interrupt();
-            throw new ScriptTermination();
+            throw new ProgramTermination();
         }
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Resume the script that is being executed by this thread.
+     * Resume the program that is being executed by this thread.
      */
-    public void resumeScript()
+    public void resumeProgram()
     {
-        scriptGate.release();
+        programGate.release();
     }
 
 
     // ----------------------------------------------------------
     /**
-     * Terminate the script that is being executed by this thread.
+     * Terminate the program that is being executed by this thread.
      */
-    public void endScript()
+    public void endProgram()
     {
         this.interrupt();
         if (currentThread() == this)
         {
-            throw new ScriptTermination();
+            throw new ProgramTermination();
         }
     }
 
 
     // ----------------------------------------------------------
-    private static class ScriptTermination
+    private static class ProgramTermination
         extends RuntimeException
     {
         private static final long serialVersionUID = 2922423860480121589L;

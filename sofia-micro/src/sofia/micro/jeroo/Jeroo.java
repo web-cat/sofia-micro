@@ -3,9 +3,9 @@ package sofia.micro.jeroo;
 import java.util.Set;
 import android.graphics.Point;
 import sofia.graphics.Image;
-import sofia.micro.ScriptableActor;
+import sofia.micro.ProgrammableActor;
 import sofia.micro.World;
-import sofia.micro.internal.ScriptThread;
+import sofia.micro.internal.ProgramThread;
 
 //-------------------------------------------------------------------------
 /**
@@ -16,7 +16,7 @@ import sofia.micro.internal.ScriptThread;
  * @version $Date: 2012/08/21 14:19 $
  */
 public class Jeroo
-    extends ScriptableActor
+    extends ProgrammableActor
 {
     //~ Fields ................................................................
 
@@ -158,7 +158,7 @@ public class Jeroo
     {
         try
         {
-            ScriptThread.beginAtomicAction();
+            ProgramThread.beginAtomicAction();
 
             Point offset = direction.offset();
             if (isInsideGrid(offset))
@@ -199,7 +199,7 @@ public class Jeroo
         }
         finally
         {
-            ScriptThread.endAtomicAction();
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -441,12 +441,12 @@ public class Jeroo
      */
     protected void incapacitate(String message)
     {
-        if (getScript() != null)
+        if (getProgram() != null)
         {
             log(message);
             setImage(imgRight);
             setRotation(180);
-            stopScript();
+            stopProgram();
         }
     }
 
