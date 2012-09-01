@@ -52,7 +52,11 @@ public class LightBot
      */
     public LightBot()
     {
-        this(0, 0);
+        super();
+        this.direction = CompassDirection.EAST;
+        imgRight = new Image("android.png");
+        imgLeft = new Image("android_left.png");
+        setImage(imgRight);
     }
 
 
@@ -64,12 +68,7 @@ public class LightBot
      */
     public LightBot(int x, int y)
     {
-        super();
-        setGridLocation(x, y);
-        this.direction = CompassDirection.EAST;
-        imgRight = new Image("lightbot/android.png");
-        imgLeft = new Image("lightbot/android_left.png");
-        setImage(imgRight);
+        this();
     }
 
 
@@ -110,41 +109,49 @@ public class LightBot
      */
     public void turnRight()
     {
-        switch (this.direction)
+        try
         {
-            case NORTH:
-                this.direction = CompassDirection.EAST;
-                break;
-            case EAST:
-                this.direction = CompassDirection.SOUTH;
-                break;
-            case SOUTH:
-                this.direction = CompassDirection.WEST;
-                break;
-            case WEST:
-                this.direction = CompassDirection.NORTH;
-                break;
+            ProgramThread.beginAtomicAction();
+            switch (this.direction)
+            {
+                case NORTH:
+                    this.direction = CompassDirection.EAST;
+                    break;
+                case EAST:
+                    this.direction = CompassDirection.SOUTH;
+                    break;
+                case SOUTH:
+                    this.direction = CompassDirection.WEST;
+                    break;
+                case WEST:
+                    this.direction = CompassDirection.NORTH;
+                    break;
+            }
+
+            switch (this.direction)
+            {
+                case WEST:
+                    setImage(imgLeft);
+                    setRotation(0);
+                    break;
+
+                case EAST:
+                    setImage(imgRight);
+                    setRotation(0);
+                    break;
+
+                case NORTH:
+                    setRotation(90);
+                    break;
+
+                case SOUTH:
+                    setRotation(90);
+                    break;
+            }
         }
-
-        switch (this.direction)
+        finally
         {
-            case WEST:
-                setImage(imgLeft);
-                setRotation(0);
-                break;
-
-            case EAST:
-                setImage(imgRight);
-                setRotation(0);
-                break;
-
-            case NORTH:
-                setRotation(-90);
-                break;
-
-            case SOUTH:
-                setRotation(90);
-                break;
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -155,41 +162,49 @@ public class LightBot
      */
     public void turnLeft()
     {
-        switch (this.direction)
+        try
         {
-            case NORTH:
-                this.direction = CompassDirection.WEST;
-                break;
-            case EAST:
-                this.direction = CompassDirection.NORTH;
-                break;
-            case SOUTH:
-                this.direction = CompassDirection.EAST;
-                break;
-            case WEST:
-                this.direction = CompassDirection.SOUTH;
-                break;
+            ProgramThread.beginAtomicAction();
+            switch (this.direction)
+            {
+                case NORTH:
+                    this.direction = CompassDirection.WEST;
+                    break;
+                case EAST:
+                    this.direction = CompassDirection.NORTH;
+                    break;
+                case SOUTH:
+                    this.direction = CompassDirection.EAST;
+                    break;
+                case WEST:
+                    this.direction = CompassDirection.SOUTH;
+                    break;
+            }
+
+            switch (this.direction)
+            {
+                case WEST:
+                    setImage(imgLeft);
+                    setRotation(0);
+                    break;
+
+                case EAST:
+                    setImage(imgRight);
+                    setRotation(0);
+                    break;
+
+                case NORTH:
+                    setRotation(-90);
+                    break;
+
+                case SOUTH:
+                    setRotation(-90);
+                    break;
+            }
         }
-
-        switch (this.direction)
+        finally
         {
-            case WEST:
-                setImage(imgLeft);
-                setRotation(0);
-                break;
-
-            case EAST:
-                setImage(imgRight);
-                setRotation(0);
-                break;
-
-            case NORTH:
-                setRotation(90);
-                break;
-
-            case SOUTH:
-                setRotation(-90);
-                break;
+            ProgramThread.endAtomicAction();
         }
     }
 
@@ -233,10 +248,19 @@ public class LightBot
      */
     public void turnLightOn()
     {
-        LightableTile tile = getOneObjectAtOffset(0, 0, LightableTile.class);
-        if (tile != null)
+        try
         {
-            tile.turnLightOn();
+            ProgramThread.beginAtomicAction();
+            LightableTile tile =
+                getOneObjectAtOffset(0, 0, LightableTile.class);
+            if (tile != null)
+            {
+                tile.turnLightOn();
+            }
+        }
+        finally
+        {
+            ProgramThread.endAtomicAction();
         }
     }
 

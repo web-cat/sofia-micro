@@ -14,7 +14,7 @@ import sofia.micro.World;
  * @author  Last changed by $Author: edwards $
  * @version $Date: 2012/08/06 11:13 $
  */
-public abstract class Tile
+public class Tile
     extends Actor
 {
     //~ Fields ................................................................
@@ -28,13 +28,10 @@ public abstract class Tile
     // ----------------------------------------------------------
     /**
      * Create a new tile.
-     * @param x  The x-coordinate of the block's location.
-     * @param y  The y-coordinate of the block's location.
      */
-    public Tile(int x, int y)
+    public Tile()
     {
         super();
-        setGridLocation(x, y);
     }
 
 
@@ -148,10 +145,30 @@ public abstract class Tile
      */
     protected void determineImage()
     {
-        setImage(new Image("lightbot/" + imageBaseName() + "_"
-            + tallerTo(Direction.NORTH)
+        String sub = tallerTo(Direction.NORTH)
             + tallerTo(Direction.EAST)
             + tallerTo(Direction.SOUTH)
-            + tallerTo(Direction.WEST)));
+            + tallerTo(Direction.WEST);
+        if (sub.equals("0000"))
+        {
+            int myDepth = blocksAt(0, 0).size();
+            if (blocksAt(-1, -1).size() > myDepth)
+            {
+                sub = "c1000";
+            }
+            else if (blocksAt(1, -1).size() > myDepth)
+            {
+                sub = "c0100";
+            }
+            else if (blocksAt(1, 1).size() > myDepth)
+            {
+                sub = "c0010";
+            }
+            else if (blocksAt(-1, 1).size() > myDepth)
+            {
+                sub = "c0001";
+            }
+        }
+        setImage(new Image(imageBaseName() + "_" + sub));
     }
 }

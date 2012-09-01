@@ -21,7 +21,7 @@ public abstract class Level
      */
     public Level()
     {
-        this(12, 12);
+        this(8, 8);
     }
 
 
@@ -35,7 +35,8 @@ public abstract class Level
      */
     public Level(int width, int height)
     {
-        super(width, height);
+        super(width, height, 48);
+        setCellBackground("tile_0000.png");
         populate();
     }
 

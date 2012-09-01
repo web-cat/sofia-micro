@@ -17,11 +17,9 @@ public class Block
     // ----------------------------------------------------------
     /**
      * Create a new block.
-     * @param x  The x-coordinate of the block's location.
-     * @param y  The y-coordinate of the block's location.
      */
-    public Block(int x, int y)
+    public Block()
     {
-        super(x, y);
+        super();
     }
 }

@@ -34,11 +34,13 @@ public class Level3
     {
         for (int i = 0; i < getHeight(); i++)
         {
-            add(new Block(4, i));
+            add(new Tile(), 1, i);
+            add(new Block(), 2, i);
+            add(new Tile(), 3, i);
         }
-        for (int i = 4; i < 7; i++)
+        for (int i = 2; i < 5; i++)
         {
-            add(new LightableTile(6, i));
+            add(new LightableTile(), 4, i);
         }
     }
 }

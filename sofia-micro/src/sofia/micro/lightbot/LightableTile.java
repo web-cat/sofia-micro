@@ -22,12 +22,10 @@ public class LightableTile
     // ----------------------------------------------------------
     /**
      * Create a new lightable tile.
-     * @param x  The x-coordinate of the block's location.
-     * @param y  The y-coordinate of the block's location.
      */
-    public LightableTile(int x, int y)
+    public LightableTile()
     {
-        super(x, y);
+        super();
     }
 
 
@@ -41,6 +39,17 @@ public class LightableTile
     {
         isLit = true;
         determineImage();
+    }
+
+
+    // ----------------------------------------------------------
+    /**
+     * Determine if this tile's light is on.
+     * @return True if this tile is lit up.
+     */
+    public boolean isOn()
+    {
+        return isLit;
     }
 
 

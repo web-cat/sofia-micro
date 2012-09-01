@@ -32,6 +32,16 @@ public class Level1
     @Override
     protected void populate()
     {
-        add(new LightableTile(6, 5));
+        for (int i = 0; i < getWidth(); i++)
+        {
+            add(new Block(), i, 0);
+            add(new Block(), i, 0);
+            add(new Tile(), i, 1);
+
+            add(new Tile(), i, getHeight() - 2);
+            add(new Block(), i, getHeight() - 1);
+            add(new Block(), i, getHeight() - 1);
+        }
+        add(new LightableTile(), 4, 3);
     }
 }
