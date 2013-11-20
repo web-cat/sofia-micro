@@ -101,12 +101,14 @@ public class Actor
      */
     public Actor(String nickName, boolean scaleToCell)
     {
-        super(new RectF(-0.5f, -0.5f, 0.5f, 0.5f));
+        super();
         this.nickName = nickName;
         this.scaleToCell = scaleToCell;
         Image image = new Image(getClass());
         image.setScaleForDpi(false);
-        setDelegate(new ImageShape(image, getBounds()));
+        RectF bounds = new RectF(-0.5f, -0.5f, 0.5f, 0.5f);
+        setDelegate(new ImageShape(image, bounds));
+
         // This call is via super, to avoid the variable reset employed
         // when clients reset the position anchor
         super.setPositionAnchor(Anchor.CENTER);
@@ -640,6 +642,9 @@ public class Actor
 
 
     // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addOther(Shape newShape)
     {
@@ -656,6 +661,9 @@ public class Actor
 
 
     // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void remove()
     {
@@ -701,13 +709,18 @@ public class Actor
     @Override
     public String toString()
     {
-        return getNickName() + "at (" + getGridX() + ", " + getGridY() + ")";
+        return getNickName() + " at (" + getGridX() + ", " + getGridY() + ")";
     }
 
 
     //~ Infrastructure Methods ................................................
 
     // ----------------------------------------------------------
+    /**
+     * Sets the current world for the actor to the given world.
+     *
+     * @param world world for the actor to be contained in
+     */
     /* package */ void setWorld(World world)
     {
         // This is not included as part of addedToWorld(), so that
@@ -803,11 +816,11 @@ public class Actor
     {
         if (v < 0.0f)
         {
-            v = 0.0f;
+            return 0.0f;
         }
         if (v > limit - 1.0f)
         {
-            v = limit - 1.0f;
+            return limit - 1.0f;
         }
         return v;
     }

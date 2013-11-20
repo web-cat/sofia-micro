@@ -14,6 +14,13 @@ public class Flower
     extends Actor
 {
     //~ Constructor ...........................................................
+    /**
+     * Create a new flower at coordinates (0, 0).
+     */
+    public Flower()
+    {
+        this(0, 0);
+    }
 
     // ----------------------------------------------------------
     /**

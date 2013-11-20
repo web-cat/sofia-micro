@@ -14,6 +14,13 @@ public class Net
     extends Actor
 {
     //~ Constructor ...........................................................
+    /**
+     * Create a new net at coordinates (0, 0).
+     */
+    public Net()
+    {
+        this(0, 0);
+    }
 
     // ----------------------------------------------------------
     /**

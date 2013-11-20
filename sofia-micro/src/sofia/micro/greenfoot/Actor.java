@@ -2,8 +2,6 @@ package sofia.micro.greenfoot;
 
 import java.util.Set;
 import sofia.graphics.Image;
-import sofia.graphics.ImageShape;
-import sofia.graphics.Shape;
 
 //-------------------------------------------------------------------------
 /**

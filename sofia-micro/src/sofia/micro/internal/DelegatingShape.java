@@ -1,6 +1,6 @@
 package sofia.micro.internal;
 
-import android.graphics.Canvas;
+import sofia.graphics.Drawing;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import sofia.graphics.Anchor;
@@ -27,18 +27,16 @@ public class DelegatingShape
 
     private Shape delegate;
 
-
     //~ Constructor ...........................................................
 
     // ----------------------------------------------------------
     /**
      * Creates a new delegating shape with no delegate.  Be sure to call
      * setDelegate() before using any other methods.
-     * @param bounds The (initial) bounding box for this shape.
      */
-    public DelegatingShape(RectF bounds)
+    public DelegatingShape()
     {
-        super(bounds);
+        this(null);
     }
 
 
@@ -50,8 +48,7 @@ public class DelegatingShape
      */
     public DelegatingShape(Shape delegate)
     {
-        this(delegate.getBounds());
-        this.delegate = delegate;
+        setDelegate(delegate);
     }
 
 
@@ -65,7 +62,6 @@ public class DelegatingShape
     public void setDelegate(Shape delegate)
     {
         this.delegate = delegate;
-        super.setBounds(delegate.getBounds());
     }
 
 
@@ -79,6 +75,13 @@ public class DelegatingShape
         return delegate;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public RectF getBounds()
+    {
+        return delegate.getBounds();
+    }
 
     // ----------------------------------------------------------
     /**
@@ -86,10 +89,8 @@ public class DelegatingShape
      */
     public void setBounds(RectF newBounds)
     {
-        super.setBounds(newBounds);
         delegate.setBounds(newBounds);
     }
-
 
     // ----------------------------------------------------------
     /**
@@ -163,10 +164,10 @@ public class DelegatingShape
     /**
      * {@inheritDoc}
      */
-    public void move(float dx, float dy)
+    public void moveBy(float dx, float dy)
     {
-        super.move(dx, dy);
-        delegate.move(dx, dy);
+        super.moveBy(dx, dy);
+        delegate.moveBy(dx, dy);
     }
 
 
@@ -218,9 +219,9 @@ public class DelegatingShape
     /**
      * {@inheritDoc}
      */
-    public void draw(Canvas canvas)
+    public void draw(Drawing drawing)
     {
-        delegate.draw(canvas);
+        delegate.draw(drawing);
     }
 
 
@@ -234,5 +235,15 @@ public class DelegatingShape
     public String toString()
     {
         return "(" + getClass().getSimpleName() + ")" + delegate;
+    }
+
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void createFixtures()
+    {
+        return;
     }
 }

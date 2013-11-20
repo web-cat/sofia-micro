@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import android.view.MenuInflater;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.view.Menu;
@@ -226,6 +227,10 @@ public class WorldScreen
     @Override
     public boolean onPrepareOptionsMenu(Menu menu)
     {
+        // Inflates the menu so menu.findItem(id) doesn't return null
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.micro_options, menu);
+
         World world = getWorld();
         if (world != null)
         {

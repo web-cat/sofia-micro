@@ -11,7 +11,8 @@ import java.util.Set;
 import sofia.graphics.Color;
 import sofia.graphics.Image;
 import sofia.graphics.Shape;
-import sofia.graphics.ShapeSet;
+import sofia.graphics.ShapeField;
+import sofia.graphics.ZIndexComparator;
 
 //-------------------------------------------------------------------------
 /**
@@ -469,8 +470,8 @@ public class World
     public void setPaintOrder(Class<? extends Actor> ... classes)
     {
         failIfNotInView();
-        ((ShapeSet)view.getShapes()).setDrawingOrder(
-            new ZClassComparator((ShapeSet)view.getShapes(), true, classes));
+        view.getShapeField().setDrawingOrder(
+            new ZClassComparator(view.getShapeField(), true, classes));
     }
 
 
@@ -495,7 +496,7 @@ public class World
         failIfNotInView();
         // FIXME: This will totally break if called by an Actor from act()!
         actSet = new java.util.TreeSet<Actor>(
-            new ZClassComparator((ShapeSet)view.getShapes(), false, classes));
+            new ZClassComparator(view.getShapeField(), false, classes));
         actSet.addAll(view.getShapes(Actor.class));
     }
 
@@ -548,7 +549,7 @@ public class World
     public int numberOfObjects()
     {
         failIfNotInView();
-        return view.getShapes().size();
+        return view.getShapes().count();
     }
 
 
@@ -614,7 +615,7 @@ public class World
         float x, float y, Class<MyActor> cls)
     {
         failIfNotInView();
-        return view.getShapesAt(x, y, cls);
+        return null; //view.getShapesAt(x, y, cls);
     }
 
 
@@ -883,7 +884,7 @@ public class World
         Actor actor, Class<MyActor> cls)
     {
         failIfNotInView();
-        return view.getIntersectingShape(actor, cls);
+        return null; //view.getIntersectingShape(actor, cls);
     }
 
 
@@ -976,7 +977,7 @@ public class World
         float x, float y, Class<MyActor> cls)
     {
         failIfNotInView();
-        return view.getShapeAt(x, y, cls);
+        return null; //view.getShapeAt(x, y, cls);
     }
 
 
@@ -993,7 +994,7 @@ public class World
         if (deferredRemoves == null)
         {
             deferredRemoves = new java.util.TreeSet<Actor>(
-                new ShapeSet.ZIndexComparator((ShapeSet)view.getShapes()));
+                new ZClassComparator(view.getShapeField(), false));
         }
 
         if (view != null && !isRunning())
@@ -1124,7 +1125,7 @@ public class World
 
     // ----------------------------------------------------------
     private static class ZClassComparator
-        extends ShapeSet.ZIndexComparator
+        extends ZIndexComparator
     {
         private java.util.Map<Class<? extends Shape>, Integer> order;
         private int last = 0;
@@ -1142,10 +1143,11 @@ public class World
          * @param classes The class order to use.  Any objects that are not
          *                listed will appear <i>after</i> any of those listed.
          */
-        public ZClassComparator(ShapeSet parent, boolean reverse,
+        public ZClassComparator(ShapeField parent, boolean reverse,
             Class<? extends Shape> ... classes)
         {
-            super(parent);
+            //super(parent);
+            super();
             if (classes != null && classes.length > 0)
             {
                 order =
@@ -1461,7 +1463,7 @@ public class World
             if (actSet == null)
             {
                 actSet = new java.util.TreeSet<Actor>(
-                    new ZClassComparator((ShapeSet)view.getShapes(), false));
+                    new ZClassComparator(view.getShapeField(), false));
                 actSet.addAll(getObjects(Actor.class));
             }
             for (Actor actor : actSet)

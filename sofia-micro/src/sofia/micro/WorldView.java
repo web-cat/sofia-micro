@@ -1,7 +1,9 @@
 package sofia.micro;
 
+import android.graphics.RectF;
+import sofia.graphics.ShapeField;
+import java.util.Set;
 import sofia.graphics.Shape;
-import sofia.graphics.ShapeSet;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -129,6 +131,8 @@ public class WorldView
      */
     public void add(Actor actor, int x, int y)
     {
+        assert world != null : "No world defined";
+        world.add(actor, x, y);
     }
 
 
@@ -150,7 +154,7 @@ public class WorldView
      */
     public void clear()
     {
-        ShapeSet shapes = (ShapeSet)getShapes();
+        ShapeField shapes = getShapeField();
         synchronized (shapes)
         {
             for (Shape shape : shapes.toArray())
@@ -189,6 +193,23 @@ public class WorldView
     public World getWorld()
     {
         return world;
+    }
+
+    /**
+     * Returns all the objects that intersect with the given actor.
+     *
+     * @param actor An Actor in the world.
+     * @param cls Class of objects to look for (null or Object.class will find
+     *            all classes).
+     * @param <MyActor> The type of object to look for, as specified
+     *                  in the cls parameter.
+     * @return A set of objects that intersect the given object.
+     */
+    /* package */ <MyActor extends Actor> Set<MyActor> getIntersectingShapes(
+        Actor actor, Class<MyActor> cls)
+    {
+        return null;
+        // TO DO: make it so it uses jbox2d
     }
 
 
@@ -239,8 +260,9 @@ public class WorldView
 
     // ----------------------------------------------------------
     @Override
-    protected void drawContents(Canvas canvas)
+    protected void drawContents(RectF repaintBounds)
     {
+        Canvas canvas = getCanvas();
         // Set up the grid-based coordinate transformation
         Matrix xform = null;
         if (world != null)
@@ -258,7 +280,7 @@ public class WorldView
         {
             world.draw(canvas);
         }
-        super.drawContents(canvas);
+        super.drawContents(repaintBounds);
 
         // Undo grid-based transform
         if (xform != null)

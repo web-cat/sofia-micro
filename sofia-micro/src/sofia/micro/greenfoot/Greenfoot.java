@@ -19,7 +19,7 @@ public class Greenfoot
     /** Error message to display when trying to use methods that requires
      * the actor be in a world.
      */
-    private static final String NO_WORLD = "Not world to control. "
+    private static final String NO_WORLD = "No world to control. "
         + "An attempt was made to use Greenfoot methods before a world was "
         + "created and attached to a view.";
 
