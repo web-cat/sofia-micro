@@ -227,9 +227,14 @@ public class WorldScreen
     @Override
     public boolean onPrepareOptionsMenu(Menu menu)
     {
-        // Inflates the menu so menu.findItem(id) doesn't return null
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.micro_options, menu);
+        // Inflates the menu so menu.findItem(id) doesn't return null,
+        // inflating the menu should only be done once so as to not have
+        // the menu repeat itself
+        if (menu.size() == 0)
+       {
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.micro_options, menu);
+        }
 
         World world = getWorld();
         if (world != null)
