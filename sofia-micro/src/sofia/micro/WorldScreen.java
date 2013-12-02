@@ -118,7 +118,7 @@ public class WorldScreen
     /**
      * Called when the "Act" menu command is selected.
      */
-    public void actSelected()
+    public void actClicked()
     {
         assert getWorld() != null : "No world defined";
         getWorld().runOneStep();
@@ -129,7 +129,7 @@ public class WorldScreen
     /**
      * Called with the "Run" menu command is selected.
      */
-    public void runSelected()
+    public void runClicked()
     {
         assert getWorld() != null : "No world defined";
         getWorld().start();
@@ -140,7 +140,7 @@ public class WorldScreen
     /**
      * Called with the "Pause" menu command is selected.
      */
-    public void pauseSelected()
+    public void pauseClicked()
     {
         assert getWorld() != null : "No world defined";
         getWorld().stop();
@@ -151,7 +151,7 @@ public class WorldScreen
     /**
      * Called with the "Reset" menu command is selected.
      */
-    public void resetSelected()
+    public void resetClicked()
     {
         if (getWorld() != null)
         {
@@ -230,8 +230,8 @@ public class WorldScreen
         // Inflates the menu so menu.findItem(id) doesn't return null,
         // inflating the menu should only be done once so as to not have
         // the menu repeat itself
-        if (menu.size() == 0)
-       {
+        if (menu.size() == 0) // menu.size() may not be the best way to check
+        {
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.micro_options, menu);
         }
