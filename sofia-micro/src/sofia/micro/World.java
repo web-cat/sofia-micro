@@ -977,7 +977,7 @@ public class World
         float x, float y, Class<MyActor> cls)
     {
         failIfNotInView();
-        return null; //view.getShapeAt(x, y, cls);
+        return view.getShapeAt(x, y, cls);
     }
 
 

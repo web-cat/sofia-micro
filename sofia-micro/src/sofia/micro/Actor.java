@@ -459,7 +459,8 @@ public class Actor
      * Assign a new horizontal (x-axis) location for this actor. This moves
      * the actor to the specified x-axis location, without changing its y-axis
      * location. The location is specified as the x-coordinate of
-     * a cell column in the world.
+     * a cell column in the world. For actors, gridX and x are essentially
+     * the same.
      *
      * @param x The location to move to on the x-axis.
      *
@@ -506,7 +507,8 @@ public class Actor
      * Assign a new vertical (y-axis) location for this actor. This moves the
      * actor to the specified y-axis location, without changing its x-axis
      * location. The location is specified as the y-coordinate of
-     * a cell row in the world.
+     * a cell row in the world. For actors, gridY and y are essentially
+     * the same.
      *
      * @param y The location to move to on the y-axis.
      *

@@ -247,6 +247,7 @@ public class DelegatingShape
         PolygonShape box = new PolygonShape();
         box.setAsBox(Math.abs(delegate.getBounds().width() / 2),
             Math.abs(delegate.getBounds().height() / 2));
+
         addFixtureForShape(box);
     }
 }

@@ -212,6 +212,24 @@ public class WorldView
         // TO DO: make it so it uses jbox2d
     }
 
+    /**
+     * Return one object that is located at the specified cell. Objects found
+     * can be restricted to a specific class (and its subclasses) by supplying
+     * the 'cls' parameter.  If more than one object of the specified class
+     * resides at that location, one of them will be chosen and returned.
+     *
+     * @param x   X-coordinate.
+     * @param y   Y-coordinate.
+     * @param cls Class of objects to look for (passing 'null' will find all
+     *            objects).
+     * @return An object at the given location, or null if none found.
+     */
+    /* package */ <MyActor extends Actor> MyActor getShapeAt(float x, float y,
+        Class<MyActor> cls)
+    {
+        return getShapes().withClass(cls).locatedAt(x, y).front();
+    }
+
 
     // ----------------------------------------------------------
     /**

@@ -6,5 +6,6 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry exported="true" kind="lib" path="/CS2114-Support/student.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Dunhili/Documents/School/GTA/CS 2114/Files/slf4j-1.7.5/slf4j-api-1.7.5.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
