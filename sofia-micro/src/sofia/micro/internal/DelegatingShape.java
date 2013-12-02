@@ -7,6 +7,7 @@ import sofia.graphics.Anchor;
 import sofia.graphics.Color;
 import sofia.graphics.PointAndAnchor;
 import sofia.graphics.Shape;
+import org.jbox2d.collision.shapes.PolygonShape;
 
 // -------------------------------------------------------------------------
 /**
@@ -112,7 +113,6 @@ public class DelegatingShape
         super.setY(y);
         delegate.setY(y);
     }
-
 
     // ----------------------------------------------------------
     /**
@@ -244,6 +244,9 @@ public class DelegatingShape
     @Override
     protected void createFixtures()
     {
-        return;
+        PolygonShape box = new PolygonShape();
+        box.setAsBox(Math.abs(delegate.getBounds().width() / 2),
+            Math.abs(delegate.getBounds().height() / 2));
+        addFixtureForShape(box);
     }
 }
