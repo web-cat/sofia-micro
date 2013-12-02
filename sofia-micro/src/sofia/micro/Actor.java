@@ -348,8 +348,6 @@ public class Actor
      * @param dy Y-coordinate relative to this object's location.
      * @param cls Class of objects to look for (passing 'null' will find all
      *            objects).
-     * @param <MyActor> The type of actor to look for, as specified
-     *                  in the cls parameter.
      * @return An object at the given location, or null if none found.
      */
     protected <MyActor extends Actor> MyActor getOneObjectAtOffset(

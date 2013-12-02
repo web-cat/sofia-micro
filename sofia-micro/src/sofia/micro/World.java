@@ -884,7 +884,7 @@ public class World
         Actor actor, Class<MyActor> cls)
     {
         failIfNotInView();
-        return null; //view.getIntersectingShape(actor, cls);
+        return view.getIntersectingShape(actor, cls);
     }
 
 

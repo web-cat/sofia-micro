@@ -208,8 +208,23 @@ public class WorldView
     /* package */ <MyActor extends Actor> Set<MyActor> getIntersectingShapes(
         Actor actor, Class<MyActor> cls)
     {
-        return null;
-        // TO DO: make it so it uses jbox2d
+        return getShapes().withClass(cls).intersecting(actor.getBounds()).all();
+    }
+
+    /**
+     * Returns the front object that intersect with the given actor.
+     *
+     * @param actor An Actor in the world.
+     * @param cls Class of objects to look for (null or Object.class will find
+     *            all classes).
+     * @param <MyActor> The type of object to look for, as specified
+     *                  in the cls parameter.
+     * @return front object that intersects the given object.
+     */
+    /* package */ <MyActor extends Actor> MyActor getIntersectingShape(
+        Actor actor, Class<MyActor> cls)
+    {
+        return getShapes().withClass(cls).intersecting(actor.getBounds()).front();
     }
 
     /**
