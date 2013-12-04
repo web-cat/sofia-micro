@@ -196,22 +196,6 @@ public class WorldView
     }
 
     /**
-     * Returns all the objects that intersect with the given actor.
-     *
-     * @param actor An Actor in the world.
-     * @param cls Class of objects to look for (null or Object.class will find
-     *            all classes).
-     * @param <MyActor> The type of object to look for, as specified
-     *                  in the cls parameter.
-     * @return A set of objects that intersect the given object.
-     */
-    /* package */ <MyActor extends Actor> Set<MyActor> getIntersectingShapes(
-        Actor actor, Class<MyActor> cls)
-    {
-        return getShapes().withClass(cls).intersecting(actor.getBounds()).all();
-    }
-
-    /**
      * Returns the front object that intersect with the given actor.
      *
      * @param actor An Actor in the world.
@@ -225,6 +209,22 @@ public class WorldView
         Actor actor, Class<MyActor> cls)
     {
         return getShapes().withClass(cls).intersecting(actor.getBounds()).front();
+    }
+
+    /**
+     * Returns all the objects that intersect with the given actor.
+     *
+     * @param actor An Actor in the world.
+     * @param cls Class of objects to look for (null or Object.class will find
+     *            all classes).
+     * @param <MyActor> The type of object to look for, as specified
+     *                  in the cls parameter.
+     * @return A set of objects that intersect the given object.
+     */
+    /* package */ <MyActor extends Actor> Set<MyActor> getIntersectingShapes(
+        Actor actor, Class<MyActor> cls)
+    {
+        return getShapes().withClass(cls).intersecting(actor.getBounds()).all();
     }
 
     /**
@@ -245,6 +245,22 @@ public class WorldView
         return getShapes().withClass(cls).locatedAt(x, y).front();
     }
 
+    /**
+     * Return all the objects that are located at the specified cell. Objects found
+     * can be restricted to a specific class (and its subclasses) by supplying
+     * the 'cls' parameter.
+     *
+     * @param x   X-coordinate.
+     * @param y   Y-coordinate.
+     * @param cls Class of objects to look for (passing 'null' will find all
+     *            objects).
+     * @return All objects at the given location, or null if none found.
+     */
+    /* package */ <MyActor extends Actor> Set<MyActor> getShapesAt(float x, float y,
+        Class<MyActor> cls)
+    {
+        return getShapes().withClass(cls).locatedAt(x, y).all();
+    }
 
     // ----------------------------------------------------------
     /**

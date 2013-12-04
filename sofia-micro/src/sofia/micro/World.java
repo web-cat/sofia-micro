@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import java.util.Arrays;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -615,7 +616,7 @@ public class World
         float x, float y, Class<MyActor> cls)
     {
         failIfNotInView();
-        return null; //view.getShapesAt(x, y, cls);
+        return view.getShapesAt(x, y, cls);
     }
 
 
