@@ -169,7 +169,7 @@ public class WorldScreen
     /**
      * Called with the "Speed" menu command is selected.
      */
-    public void speedSelected()
+    public void speedClicked()
     {
         if (getWorldView() == null)
         {
@@ -230,7 +230,7 @@ public class WorldScreen
         // Inflates the menu so menu.findItem(id) doesn't return null,
         // inflating the menu should only be done once so as to not have
         // the menu repeat itself
-        if (menu.size() == 0) // menu.size() may not be the best way to check
+        if (menu.size() == 0)
         {
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.micro_options, menu);
