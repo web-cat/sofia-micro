@@ -106,7 +106,7 @@ public class Actor
         this.scaleToCell = scaleToCell;
         Image image = new Image(getClass());
         image.setScaleForDpi(false);
-        RectF bounds = new RectF(-0.5f, -0.5f, 0.5f, 0.5f);
+        RectF bounds = new RectF(-0.45f, -0.45f, 0.45f, 0.45f);
         setDelegate(new ImageShape(image, bounds));
 
         // This call is via super, to avoid the variable reset employed
@@ -482,6 +482,7 @@ public class Actor
             x = limit(x, world.getWidth());
         }
         super.setX(x);
+        super.setBounds(new RectF(x + -0.45f, getY() + -0.45f, x + 0.45f, getY() + 0.45f));
     }
 
 
@@ -530,6 +531,7 @@ public class Actor
             y = limit(y, world.getHeight());
         }
         super.setY(y);
+        super.setBounds(new RectF(getX() + -0.45f, y + -0.45f, getX() + 0.45f, y + 0.45f));
     }
 
 
@@ -567,6 +569,7 @@ public class Actor
             position.y = limit(position.y, world.getHeight());
         }
         super.setPosition(position);
+        super.setBounds(new RectF(getX() + -0.45f, getY() + -0.45f, getX() + 0.45f, getY() + 0.45f));
     }
 
 
@@ -580,6 +583,7 @@ public class Actor
         super.setPosition(pointAndAnchor);
         // Force limit checking
         setPosition(getPosition());
+        super.setBounds(new RectF(getX() + -0.45f, getY() + -0.45f, getX() + 0.45f, getY() + 0.45f));
     }
 
 
