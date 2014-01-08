@@ -278,4 +278,14 @@ public class WorldScreen
     {
         return new WorldView(parent);
     }
+
+    /**
+     * Shortcut for setting the world in the associated WorldView.
+     *
+     * @param world world to assign to the WorldView
+     */
+    protected void setWorld(World world)
+    {
+        getWorldView().setWorld(world);
+    }
 }
