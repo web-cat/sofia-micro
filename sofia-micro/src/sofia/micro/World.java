@@ -1053,6 +1053,11 @@ public class World
 
 
     // ----------------------------------------------------------
+    /**
+     * Returns whether the engine is currently running.
+     *
+     * @return true if the engine is running, false otherwise.
+     */
     /* package */ boolean isRunning()
     {
         return engine.isRunning();
