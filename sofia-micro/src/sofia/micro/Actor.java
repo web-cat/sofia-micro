@@ -101,7 +101,6 @@ public class Actor
      */
     public Actor(String nickName, boolean scaleToCell)
     {
-        super();
         this.nickName = nickName;
         this.scaleToCell = scaleToCell;
         Image image = new Image(getClass());
@@ -482,7 +481,7 @@ public class Actor
             x = limit(x, world.getWidth());
         }
         super.setX(x);
-        super.setBounds(new RectF(x + -0.45f, getY() + -0.45f, x + 0.45f, getY() + 0.45f));
+        updateBounds(x, getY());
     }
 
 
@@ -531,7 +530,7 @@ public class Actor
             y = limit(y, world.getHeight());
         }
         super.setY(y);
-        super.setBounds(new RectF(getX() + -0.45f, y + -0.45f, getX() + 0.45f, y + 0.45f));
+        updateBounds(getX(), y);
     }
 
 
@@ -569,7 +568,7 @@ public class Actor
             position.y = limit(position.y, world.getHeight());
         }
         super.setPosition(position);
-        super.setBounds(new RectF(getX() + -0.45f, getY() + -0.45f, getX() + 0.45f, getY() + 0.45f));
+        updateBounds(getX(), getY());
     }
 
 
@@ -583,7 +582,7 @@ public class Actor
         super.setPosition(pointAndAnchor);
         // Force limit checking
         setPosition(getPosition());
-        super.setBounds(new RectF(getX() + -0.45f, getY() + -0.45f, getX() + 0.45f, getY() + 0.45f));
+        updateBounds(getX(), getY());
     }
 
 
@@ -736,6 +735,18 @@ public class Actor
         scaleImageForWorldIfNecessary();
     }
 
+
+    // ----------------------------------------------------------
+    /**
+     * Updates the bounds for the image to match the changed x and y coordinate.
+     *
+     * @param x x-coordinate
+     * @param y y-coordinate
+     */
+    private void updateBounds(float x, float y)
+    {
+        super.setBounds(new RectF(x - 0.45f, y - 0.45f, x + 0.45f, y + 0.45f));
+    }
 
     // ----------------------------------------------------------
     private void scaleImageForWorldIfNecessary()
