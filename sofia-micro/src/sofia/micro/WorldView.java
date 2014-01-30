@@ -1,5 +1,8 @@
 package sofia.micro;
 
+import android.view.KeyEvent;
+import java.util.LinkedList;
+import android.view.MotionEvent;
 import android.graphics.RectF;
 import sofia.graphics.ShapeField;
 import java.util.Set;
@@ -25,7 +28,8 @@ public class WorldView
     //~ Fields ................................................................
 
     private World world;
-
+    private LinkedList<MotionEvent> eventBuffer = new LinkedList<MotionEvent>();
+    private LinkedList<KeyEvent> keyBuffer = new LinkedList<KeyEvent>();
 
     //~ Constructors ..........................................................
 
@@ -304,6 +308,71 @@ public class WorldView
         // by default, do nothing
     }
 
+    /**
+     * Handles catching any motion events for the world view, just pushes
+     * them onto the event list so they can later be dispatched.
+     *
+     * @param e motion event to catch
+     * @return true if the event was successfully added, false otherwise
+     */
+    @Override
+    public boolean onTouchEvent(MotionEvent e)
+    {
+        return eventBuffer.add(e);
+    }
+
+    /**
+     * Handles catching any key events, just pushes it on the key list so they
+     * can be dispatched later.
+     *
+     * @param e key event to catch
+     * @return true if the event was successfully added, false otherwise
+     */
+    public boolean onKeyUp(int keyCode, KeyEvent e)
+    {
+        return keyBuffer.add(e);
+    }
+
+    /**
+     * Handles catching any key events, just pushes it on the key list so they
+     * can be dispatched later.
+     *
+     * @param e key event to catch
+     * @return true if the event was successfully added, false otherwise
+     */
+    public boolean onKeyDown(int keyCode, KeyEvent e)
+    {
+        return keyBuffer.add(e);
+    }
+
+    /**
+     * Returns the current event buffer.
+     *
+     * @return event buffer
+     */
+    protected LinkedList<MotionEvent> getEventBuffer()
+    {
+        return eventBuffer;
+    }
+
+    /**
+     * Returns the current key buffer.
+     *
+     * @return event buffer
+     */
+    protected LinkedList<KeyEvent> getKeyBuffer()
+    {
+        return keyBuffer;
+    }
+
+    /**
+     * Clears the motion and key event buffers.
+     */
+    protected void clearBuffers()
+    {
+        eventBuffer.clear();
+        keyBuffer.clear();
+    }
 
     //~ Protected Methods .....................................................
 
