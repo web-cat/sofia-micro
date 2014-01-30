@@ -1,6 +1,10 @@
 package sofia.micro;
 
-import java.util.Arrays;
+import android.view.KeyEvent;
+import sofia.internal.events.DpadDispatcher;
+import java.util.LinkedList;
+import sofia.internal.events.TouchDispatcher;
+import android.view.MotionEvent;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -1441,6 +1445,9 @@ public class World
          */
         private void step()
         {
+            LinkedList<MotionEvent> eventBuffer = view.getEventBuffer();
+            LinkedList<KeyEvent> keyBuffer = view.getKeyBuffer();
+
             log.debug("beginning step");
 
             // act for view
@@ -1457,6 +1464,15 @@ public class World
             // act for world
             try
             {
+                for (MotionEvent e : eventBuffer)
+                {
+                    //DpadDispatcher.dispatchTo(this, e);
+                    TouchDispatcher.dispatchTo(this, e);
+                }
+                for (KeyEvent e : keyBuffer)
+                {
+                    //DpadDispatcher.dispatchTo(this, e);
+                }
                 act();
             }
             catch (Exception e)
@@ -1478,6 +1494,15 @@ public class World
                 {
                     try
                     {
+                        for (MotionEvent e : eventBuffer)
+                        {
+                            //DpadDispatcher.dispatchTo(this, e);
+                            TouchDispatcher.dispatchTo(actor, e);
+                        }
+                        for (KeyEvent e : keyBuffer)
+                        {
+                            //DpadDispatcher.dispatchTo(this, e);
+                        }
                         actor.act();
                     }
                     catch (Exception e)
@@ -1487,6 +1512,7 @@ public class World
                     }
                 }
             }
+            view.clearBuffers();
 
             handleDeferredActions();
             log.debug("ending step");
