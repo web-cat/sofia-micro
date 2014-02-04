@@ -328,9 +328,11 @@ public class WorldView
      * @param e key event to catch
      * @return true if the event was successfully added, false otherwise
      */
+    @Override
     public boolean onKeyUp(int keyCode, KeyEvent e)
     {
-        return keyBuffer.add(e);
+        return (keyCode == KeyEvent.KEYCODE_MENU) ? super.onKeyUp(keyCode, e) :
+            keyBuffer.add(e);
     }
 
     /**
@@ -340,9 +342,11 @@ public class WorldView
      * @param e key event to catch
      * @return true if the event was successfully added, false otherwise
      */
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent e)
     {
-        return keyBuffer.add(e);
+        return (keyCode == KeyEvent.KEYCODE_MENU) ? super.onKeyUp(keyCode, e) :
+            keyBuffer.add(e);
     }
 
     /**
