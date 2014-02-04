@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import sofia.graphics.DirectionalPad;
 import android.view.KeyEvent;
 import sofia.internal.events.DpadDispatcher;
 import java.util.LinkedList;
@@ -43,6 +44,7 @@ public class World
     private Color   gridColor;
     private Image   background;
     private boolean backgroundIsForCell;
+    private DirectionalPad dpad;
 
     private static final int DEFAULT_WIDTH  = 20;
     private static final int DEFAULT_HEIGHT = 12;
@@ -205,6 +207,7 @@ public class World
         grid = new RectF(0, 0, width, height);
         setScaledCellSize(scaledCellSize, scaleToFit);
         deferredAdds = new java.util.ArrayList<Actor>();
+        dpad = new DirectionalPad(new RectF());  // default value for now
         engine = new Engine();
         engine.start();
     }
@@ -1466,12 +1469,12 @@ public class World
             {
                 for (MotionEvent e : eventBuffer)
                 {
-                    //DpadDispatcher.dispatchTo(this, e);
+                    dpad.onTouchDown(e);
                     TouchDispatcher.dispatchTo(this, e);
                 }
                 for (KeyEvent e : keyBuffer)
                 {
-                    //DpadDispatcher.dispatchTo(this, e);
+                    // dispatch to dpad
                 }
                 act();
             }
@@ -1496,12 +1499,12 @@ public class World
                     {
                         for (MotionEvent e : eventBuffer)
                         {
-                            //DpadDispatcher.dispatchTo(this, e);
+                            dpad.onTouchDown(e);
                             TouchDispatcher.dispatchTo(actor, e);
                         }
                         for (KeyEvent e : keyBuffer)
                         {
-                            //DpadDispatcher.dispatchTo(this, e);
+                            // dispatch to dpad
                         }
                         actor.act();
                     }
