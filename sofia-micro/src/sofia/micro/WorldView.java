@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import sofia.graphics.DirectionalPad;
 import android.view.KeyEvent;
 import java.util.LinkedList;
 import android.view.MotionEvent;
@@ -28,6 +29,7 @@ public class WorldView
     //~ Fields ................................................................
 
     private World world;
+
     private LinkedList<MotionEvent> eventBuffer = new LinkedList<MotionEvent>();
     private LinkedList<KeyEvent> keyBuffer = new LinkedList<KeyEvent>();
 
@@ -137,6 +139,20 @@ public class WorldView
     {
         assert world != null : "No world defined";
         world.add(actor, x, y);
+    }
+
+    /**
+     * Adds a directional pad to this view. Note that a view should only contain
+     * a single dpad.
+     *
+     * @param dpad directional pad to be added
+     */
+    public void addDirectionalPad(DirectionalPad dpad)
+    {
+        if (!getShapes().withClass(DirectionalPad.class).exist())
+        {
+            add(dpad);
+        }
     }
 
 
@@ -354,7 +370,7 @@ public class WorldView
      *
      * @return event buffer
      */
-    protected LinkedList<MotionEvent> getEventBuffer()
+    public LinkedList<MotionEvent> getEventBuffer()
     {
         return eventBuffer;
     }
@@ -364,7 +380,7 @@ public class WorldView
      *
      * @return event buffer
      */
-    protected LinkedList<KeyEvent> getKeyBuffer()
+    public LinkedList<KeyEvent> getKeyBuffer()
     {
         return keyBuffer;
     }
@@ -372,7 +388,7 @@ public class WorldView
     /**
      * Clears the motion and key event buffers.
      */
-    protected void clearBuffers()
+    public void clearBuffers()
     {
         eventBuffer.clear();
         keyBuffer.clear();

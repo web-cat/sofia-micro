@@ -2,7 +2,6 @@ package sofia.micro;
 
 import sofia.graphics.DirectionalPad;
 import android.view.KeyEvent;
-import sofia.internal.events.DpadDispatcher;
 import java.util.LinkedList;
 import sofia.internal.events.TouchDispatcher;
 import android.view.MotionEvent;
@@ -44,7 +43,6 @@ public class World
     private Color   gridColor;
     private Image   background;
     private boolean backgroundIsForCell;
-    private DirectionalPad dpad;
 
     private static final int DEFAULT_WIDTH  = 20;
     private static final int DEFAULT_HEIGHT = 12;
@@ -58,6 +56,7 @@ public class World
     private Set<Actor> deferredRemoves;
     private Set<Actor> actSet;
     private Object actorSetLock = new Object();
+    private DirectionalPad dpad;
 
     private Engine engine;
     private static final int MAX_SPEED = 100;
@@ -207,7 +206,7 @@ public class World
         grid = new RectF(0, 0, width, height);
         setScaledCellSize(scaledCellSize, scaleToFit);
         deferredAdds = new java.util.ArrayList<Actor>();
-        dpad = new DirectionalPad(new RectF());  // default value for now
+        dpad = null;
         engine = new Engine();
         engine.start();
     }
@@ -295,6 +294,23 @@ public class World
         add(actor);
     }
 
+    /**
+     * Adds a directional pad to the world view. Note that a view should only contain
+     * a single dpad.
+     *
+     * @param directionalPad directional pad to be added
+     */
+    public void addDirectionalPad(DirectionalPad directionalPad)
+    {
+        if (view != null && dpad != null)
+        {
+            view.addDirectionalPad(directionalPad);
+        }
+        else if (dpad == null)
+        {
+            dpad = directionalPad;
+        }
+    }
 
     // ----------------------------------------------------------
     /**
@@ -1023,6 +1039,10 @@ public class World
                 }
                 deferredRemoves.clear();
             }
+            if (dpad != null)
+            {
+                view.addDirectionalPad(dpad);
+            }
         }
     }
 
@@ -1469,8 +1489,11 @@ public class World
             {
                 for (MotionEvent e : eventBuffer)
                 {
-                    dpad.onTouchDown(e);
-                    TouchDispatcher.dispatchTo(this, e);
+                    if (dpad != null)
+                    {
+                        dpad.onTouchDown(e);
+                    }
+                    TouchDispatcher.dispatchTo(World.this, e);
                 }
                 for (KeyEvent e : keyBuffer)
                 {
@@ -1499,7 +1522,10 @@ public class World
                     {
                         for (MotionEvent e : eventBuffer)
                         {
-                            dpad.onTouchDown(e);
+                            if (dpad != null)
+                            {
+                                dpad.onTouchDown(e);
+                            }
                             TouchDispatcher.dispatchTo(actor, e);
                         }
                         for (KeyEvent e : keyBuffer)
