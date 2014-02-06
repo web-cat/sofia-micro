@@ -1468,8 +1468,10 @@ public class World
          */
         private void step()
         {
-            LinkedList<MotionEvent> eventBuffer = view.getEventBuffer();
-            LinkedList<KeyEvent> keyBuffer = view.getKeyBuffer();
+            LinkedList<MotionEvent> eventBuffer = view.getMotionBuffer();
+            //LinkedList<KeyEvent> keyBuffer = view.getKeyBuffer();
+            LinkedList<Integer> actionBuffer = view.getActionBuffer();
+            //LinkedList<Integer> keyCodeBuffer = view.getKeyCodeBuffer();
 
             log.debug("beginning step");
 
@@ -1493,12 +1495,14 @@ public class World
                     {
                         dpad.onTouchDown(e);
                     }
-                    TouchDispatcher.dispatchTo(World.this, e);
+                    TouchDispatcher.dispatchTo(World.this,
+                        World.this.scaledCellSize, e, actionBuffer.getFirst());
+                    actionBuffer.add(actionBuffer.removeFirst());
                 }
-                for (KeyEvent e : keyBuffer)
-                {
+                //for (KeyEvent e : keyBuffer)
+                //{
                     // dispatch to dpad
-                }
+                //}
                 act();
             }
             catch (Exception e)
@@ -1526,12 +1530,14 @@ public class World
                             {
                                 dpad.onTouchDown(e);
                             }
-                            TouchDispatcher.dispatchTo(actor, e);
+                            TouchDispatcher.dispatchTo(actor,
+                                World.this.scaledCellSize, e, actionBuffer.getFirst());
+                            actionBuffer.add(actionBuffer.removeFirst());
                         }
-                        for (KeyEvent e : keyBuffer)
-                        {
+                        //for (KeyEvent e : keyBuffer)
+                        //{
                             // dispatch to dpad
-                        }
+                        //}
                         actor.act();
                     }
                     catch (Exception e)

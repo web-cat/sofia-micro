@@ -30,8 +30,10 @@ public class WorldView
 
     private World world;
 
-    private LinkedList<MotionEvent> eventBuffer = new LinkedList<MotionEvent>();
+    private LinkedList<MotionEvent> motionBuffer = new LinkedList<MotionEvent>();
+    private LinkedList<Integer> actionBuffer = new LinkedList<Integer>();
     private LinkedList<KeyEvent> keyBuffer = new LinkedList<KeyEvent>();
+    private LinkedList<Integer> keyCodeBuffer = new LinkedList<Integer>();
 
     //~ Constructors ..........................................................
 
@@ -334,7 +336,7 @@ public class WorldView
     @Override
     public boolean onTouchEvent(MotionEvent e)
     {
-        return eventBuffer.add(e);
+        return motionBuffer.add(e) && actionBuffer.add(e.getAction());
     }
 
     /**
@@ -348,7 +350,7 @@ public class WorldView
     public boolean onKeyUp(int keyCode, KeyEvent e)
     {
         return (keyCode == KeyEvent.KEYCODE_MENU) ? super.onKeyUp(keyCode, e) :
-            keyBuffer.add(e);
+            keyBuffer.add(e) && keyCodeBuffer.add(keyCode);
     }
 
     /**
@@ -362,7 +364,7 @@ public class WorldView
     public boolean onKeyDown(int keyCode, KeyEvent e)
     {
         return (keyCode == KeyEvent.KEYCODE_MENU) ? super.onKeyUp(keyCode, e) :
-            keyBuffer.add(e);
+            keyBuffer.add(e) && keyCodeBuffer.add(keyCode);
     }
 
     /**
@@ -370,9 +372,20 @@ public class WorldView
      *
      * @return event buffer
      */
-    public LinkedList<MotionEvent> getEventBuffer()
+    public LinkedList<MotionEvent> getMotionBuffer()
     {
-        return eventBuffer;
+        return motionBuffer;
+    }
+
+    /**
+     * Returns the current buffer that stores the actions corresponding to the
+     * motion events.
+     *
+     * @return event buffer
+     */
+    public LinkedList<Integer> getActionBuffer()
+    {
+        return actionBuffer;
     }
 
     /**
@@ -386,12 +399,25 @@ public class WorldView
     }
 
     /**
+     * Returns the current buffer that stores the key codes corresponding to the
+     * key events.
+     *
+     * @return event buffer
+     */
+    public LinkedList<Integer> getKeyCodeBuffer()
+    {
+        return keyCodeBuffer;
+    }
+
+    /**
      * Clears the motion and key event buffers.
      */
     public void clearBuffers()
     {
-        eventBuffer.clear();
+        motionBuffer.clear();
         keyBuffer.clear();
+        actionBuffer.clear();
+        keyCodeBuffer.clear();
     }
 
     //~ Protected Methods .....................................................
