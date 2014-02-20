@@ -1513,7 +1513,7 @@ public class World
             try
             {
                 // if the world has any listeners, dispatch motion events to it
-                if (TouchDispatcher.hasTouchListeners(World.this))
+                if (!motionBuffer.isEmpty() && TouchDispatcher.hasTouchListeners(World.this))
                 {
                     for (MotionEventWrapper e : motionBuffer)
                     {
@@ -1547,7 +1547,7 @@ public class World
                     try
                     {
                         // if the actor has any listeners, dispatch motion events to it
-                        if (TouchDispatcher.hasTouchListeners(actor))
+                        if (!motionBuffer.isEmpty() && TouchDispatcher.hasTouchListeners(actor))
                         {
                             for (MotionEventWrapper e : motionBuffer)
                             {
