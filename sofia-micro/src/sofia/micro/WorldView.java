@@ -346,6 +346,7 @@ public class WorldView
             return super.onTouchEvent(e);
         }
 
+        gestureDetector.onTouchEvent(e);
         return (onFirstBuffer) ? motionBuffer1.add(new MotionEventWrapper(e, e.getAction()))
             : motionBuffer2.add(new MotionEventWrapper(e, e.getAction()));
     }
@@ -529,12 +530,11 @@ public class WorldView
      *  @version Feb 19, 2014
      */
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onDown(MotionEvent e)
-        {
-            return false;
-        }
-
+        /**
+         * Listener for double tap events.
+         *
+         * @param e motion event
+         */
         @Override
         public boolean onDoubleTap(MotionEvent e)
         {
@@ -543,8 +543,10 @@ public class WorldView
                 return false;
             }
 
-            return (onFirstBuffer) ? motionBuffer1.add(new MotionEventWrapper(e, e.getAction()))
-                : motionBuffer2.add(new MotionEventWrapper(e, e.getAction()));
+            // currently using -1 as the 'action' for double-tap, will probably
+            // want to change later
+            return (onFirstBuffer) ? motionBuffer1.add(new MotionEventWrapper(e, -1))
+                : motionBuffer2.add(new MotionEventWrapper(e, -1));
         }
     }
 }
