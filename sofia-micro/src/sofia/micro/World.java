@@ -1,10 +1,10 @@
 package sofia.micro;
 
+import sofia.micro.WorldView.KeyEventWrapper;
+import sofia.micro.WorldView.MotionEventWrapper;
+import java.util.ArrayList;
 import sofia.graphics.DirectionalPad;
-import android.view.KeyEvent;
-import java.util.LinkedList;
 import sofia.internal.events.TouchDispatcher;
-import android.view.MotionEvent;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -207,6 +207,7 @@ public class World
         setScaledCellSize(scaledCellSize, scaleToFit);
         deferredAdds = new java.util.ArrayList<Actor>();
         dpad = null;
+        //dpad = new DirectionalPad(new RectF(-0.45f, -0.45f, 0.45f, 0.45f));
         engine = new Engine();
         engine.start();
     }
@@ -298,17 +299,14 @@ public class World
      * Adds a directional pad to the world view. Note that a view should only contain
      * a single dpad.
      *
-     * @param directionalPad directional pad to be added
+     * @param bounds bounds for the directional pad to be set
      */
-    public void addDirectionalPad(DirectionalPad directionalPad)
+    public void setDirectionalPadBounds(RectF bounds)
     {
-        if (view != null && dpad != null)
+        dpad = new DirectionalPad(bounds);
+        if (!view.getShapes().withClass(DirectionalPad.class).exist())
         {
-            view.addDirectionalPad(directionalPad);
-        }
-        else if (dpad == null)
-        {
-            dpad = directionalPad;
+            view.add(dpad);
         }
     }
 
@@ -1006,6 +1004,12 @@ public class World
 
 
     // ----------------------------------------------------------
+    /**
+     * Sets the world view to the given view. Also adds and removes any deferred
+     * actors to the world.
+     *
+     * @param view view to be added to this world
+     */
     /* package */ void setWorldView(WorldView view)
     {
         this.view = view;
@@ -1041,7 +1045,8 @@ public class World
             }
             if (dpad != null)
             {
-                view.addDirectionalPad(dpad);
+                view.add(dpad);
+                dpad.setY(height - 1);
             }
         }
     }
@@ -1468,10 +1473,11 @@ public class World
          */
         private void step()
         {
-            LinkedList<MotionEvent> eventBuffer = view.getMotionBuffer();
+            List<MotionEventWrapper> motionBuffer = view.getMotionBuffer();
+            List<KeyEventWrapper> keyBuffer = view.getKeyBuffer();
             //LinkedList<KeyEvent> keyBuffer = view.getKeyBuffer();
-            LinkedList<Integer> actionBuffer = view.getActionBuffer();
             //LinkedList<Integer> keyCodeBuffer = view.getKeyCodeBuffer();
+            view.swapBuffers();
 
             log.debug("beginning step");
 
@@ -1486,22 +1492,38 @@ public class World
                     + view.getClass().getSimpleName() + ".act()", e);
             }
 
-            // act for world
+            // dispatch events to the dpad before we call the act() method
+            // for the world or the actors
             try
             {
-                for (MotionEvent e : eventBuffer)
+                for (MotionEventWrapper e : motionBuffer)
                 {
                     if (dpad != null)
                     {
-                        dpad.onTouchDown(e);
+                        dpad.onTouchDown(e.motionEvent);
                     }
-                    TouchDispatcher.dispatchTo(World.this,
-                        World.this.scaledCellSize, e, actionBuffer.getFirst());
-                    actionBuffer.add(actionBuffer.removeFirst());
                 }
-                //for (KeyEvent e : keyBuffer)
+            }
+            catch (Exception e)
+            {
+                log.error("Unexpected exception in dispatching events to dpad", e);
+            }
+
+            // act for world
+            try
+            {
+                // if the world has any listeners, dispatch motion events to it
+                if (TouchDispatcher.hasTouchListeners(World.this))
+                {
+                    for (MotionEventWrapper e : motionBuffer)
+                    {
+                        TouchDispatcher.dispatchTo(World.this,
+                            World.this.scaledCellSize, e.motionEvent, e.action);
+                    }
+                }
+                //for (KeyEventWrapper e : keyBuffer)
                 //{
-                    // dispatch to dpad
+                    // dispatch key events
                 //}
                 act();
             }
@@ -1524,19 +1546,18 @@ public class World
                 {
                     try
                     {
-                        for (MotionEvent e : eventBuffer)
+                        // if the actor has any listeners, dispatch motion events to it
+                        if (TouchDispatcher.hasTouchListeners(actor))
                         {
-                            if (dpad != null)
+                            for (MotionEventWrapper e : motionBuffer)
                             {
-                                dpad.onTouchDown(e);
+                                TouchDispatcher.dispatchTo(actor, World.this.scaledCellSize,
+                                    e.motionEvent, e.action);
                             }
-                            TouchDispatcher.dispatchTo(actor,
-                                World.this.scaledCellSize, e, actionBuffer.getFirst());
-                            actionBuffer.add(actionBuffer.removeFirst());
                         }
-                        //for (KeyEvent e : keyBuffer)
+                        //for (KeyEventWrapper e : keyBuffer)
                         //{
-                            // dispatch to dpad
+                            // dispatch key events
                         //}
                         actor.act();
                     }

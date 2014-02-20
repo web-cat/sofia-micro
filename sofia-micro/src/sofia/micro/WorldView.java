@@ -1,8 +1,9 @@
 package sofia.micro;
 
-import sofia.graphics.DirectionalPad;
+import android.view.GestureDetector;
+import java.util.List;
+import java.util.ArrayList;
 import android.view.KeyEvent;
-import java.util.LinkedList;
 import android.view.MotionEvent;
 import android.graphics.RectF;
 import sofia.graphics.ShapeField;
@@ -30,10 +31,26 @@ public class WorldView
 
     private World world;
 
-    private LinkedList<MotionEvent> motionBuffer = new LinkedList<MotionEvent>();
-    private LinkedList<Integer> actionBuffer = new LinkedList<Integer>();
-    private LinkedList<KeyEvent> keyBuffer = new LinkedList<KeyEvent>();
-    private LinkedList<Integer> keyCodeBuffer = new LinkedList<Integer>();
+    // We use 2 sets of 2 buffers, motion and action buffer store the touch
+    // events along with the corresponding action, the key buffer and key code
+    // store the key events and the corresponding key code. 2 sets of these buffers
+    // are used so that while one buffer is being processed during the act() of the
+    // world, the other buffer can store events that are fired
+    private boolean onFirstBuffer = true;
+
+    /*private LinkedList<EventWrapper> motionBuffer1 = new LinkedList<EventWrapper>();
+    private LinkedList<EventWrapper> keyBuffer1 = new LinkedList<EventWrapper>();
+
+    private LinkedList<EventWrapper> motionBuffer2 = new LinkedList<EventWrapper>();
+    private LinkedList<EventWrapper> keyBuffer2 = new LinkedList<EventWrapper>();*/
+
+    private ArrayList<MotionEventWrapper> motionBuffer1 = new ArrayList<MotionEventWrapper>();
+    private ArrayList<KeyEventWrapper> keyBuffer1 = new ArrayList<KeyEventWrapper>();
+
+    private ArrayList<MotionEventWrapper> motionBuffer2 = new ArrayList<MotionEventWrapper>();
+    private ArrayList<KeyEventWrapper> keyBuffer2 = new ArrayList<KeyEventWrapper>();
+
+    private GestureDetector gestureDetector;
 
     //~ Constructors ..........................................................
 
@@ -82,6 +99,7 @@ public class WorldView
                 }
             }
         });
+        gestureDetector = new GestureDetector(context, new GestureListener());
     }
 
 
@@ -95,6 +113,7 @@ public class WorldView
     public WorldView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
+        gestureDetector = new GestureDetector(context, new GestureListener());
     }
 
 
@@ -109,6 +128,7 @@ public class WorldView
     public WorldView(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
+        gestureDetector = new GestureDetector(context, new GestureListener());
     }
 
 
@@ -142,21 +162,6 @@ public class WorldView
         assert world != null : "No world defined";
         world.add(actor, x, y);
     }
-
-    /**
-     * Adds a directional pad to this view. Note that a view should only contain
-     * a single dpad.
-     *
-     * @param dpad directional pad to be added
-     */
-    public void addDirectionalPad(DirectionalPad dpad)
-    {
-        if (!getShapes().withClass(DirectionalPad.class).exist())
-        {
-            add(dpad);
-        }
-    }
-
 
     // ----------------------------------------------------------
     /**
@@ -336,7 +341,13 @@ public class WorldView
     @Override
     public boolean onTouchEvent(MotionEvent e)
     {
-        return motionBuffer.add(e) && actionBuffer.add(e.getAction());
+        if (!world.isRunning())
+        {
+            return super.onTouchEvent(e);
+        }
+
+        return (onFirstBuffer) ? motionBuffer1.add(new MotionEventWrapper(e, e.getAction()))
+            : motionBuffer2.add(new MotionEventWrapper(e, e.getAction()));
     }
 
     /**
@@ -349,8 +360,13 @@ public class WorldView
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent e)
     {
-        return (keyCode == KeyEvent.KEYCODE_MENU) ? super.onKeyUp(keyCode, e) :
-            keyBuffer.add(e) && keyCodeBuffer.add(keyCode);
+        if (keyCode == KeyEvent.KEYCODE_MENU || !world.isRunning())
+        {
+            return super.onKeyUp(keyCode, e);
+        }
+
+        return (onFirstBuffer) ? keyBuffer1.add(new KeyEventWrapper(e, keyCode))
+            : keyBuffer2.add(new KeyEventWrapper(e, keyCode));
     }
 
     /**
@@ -363,8 +379,13 @@ public class WorldView
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e)
     {
-        return (keyCode == KeyEvent.KEYCODE_MENU) ? super.onKeyUp(keyCode, e) :
-            keyBuffer.add(e) && keyCodeBuffer.add(keyCode);
+        if (keyCode == KeyEvent.KEYCODE_MENU || !world.isRunning())
+        {
+            return super.onKeyDown(keyCode, e);
+        }
+
+        return (onFirstBuffer) ? keyBuffer1.add(new KeyEventWrapper(e, keyCode))
+            : keyBuffer2.add(new KeyEventWrapper(e, keyCode));
     }
 
     /**
@@ -372,52 +393,46 @@ public class WorldView
      *
      * @return event buffer
      */
-    public LinkedList<MotionEvent> getMotionBuffer()
+    protected List<MotionEventWrapper> getMotionBuffer()
     {
-        return motionBuffer;
+        return (onFirstBuffer) ? motionBuffer1 : motionBuffer2;
     }
 
-    /**
-     * Returns the current buffer that stores the actions corresponding to the
-     * motion events.
-     *
-     * @return event buffer
-     */
-    public LinkedList<Integer> getActionBuffer()
-    {
-        return actionBuffer;
-    }
 
     /**
      * Returns the current key buffer.
      *
      * @return event buffer
      */
-    public LinkedList<KeyEvent> getKeyBuffer()
+    protected List<KeyEventWrapper> getKeyBuffer()
     {
-        return keyBuffer;
-    }
-
-    /**
-     * Returns the current buffer that stores the key codes corresponding to the
-     * key events.
-     *
-     * @return event buffer
-     */
-    public LinkedList<Integer> getKeyCodeBuffer()
-    {
-        return keyCodeBuffer;
+        return (onFirstBuffer) ? keyBuffer1 : keyBuffer2;
     }
 
     /**
      * Clears the motion and key event buffers.
      */
-    public void clearBuffers()
+    protected void clearBuffers()
     {
-        motionBuffer.clear();
-        keyBuffer.clear();
-        actionBuffer.clear();
-        keyCodeBuffer.clear();
+        if (!onFirstBuffer)
+        {
+            motionBuffer1.clear();
+            keyBuffer1.clear();
+        }
+        else
+        {
+            motionBuffer2.clear();
+            keyBuffer2.clear();
+        }
+    }
+
+    /**
+     * Swaps the buffers currently being used. This should be called once the
+     * buffers currently being used have been retrieved using the getters.
+     */
+    protected void swapBuffers()
+    {
+        onFirstBuffer = !onFirstBuffer;
     }
 
     //~ Protected Methods .....................................................
@@ -450,6 +465,86 @@ public class WorldView
         if (xform != null)
         {
             canvas.restore();
+        }
+    }
+
+    /**
+     *  Wrapper class for motion events along with their corresponding action
+     *
+     *  @author Dunhili
+     *  @version Feb 17, 2014
+     */
+    protected class MotionEventWrapper
+    {
+        /** Motion event */
+        public MotionEvent motionEvent;
+
+        /** Corresponding action */
+        public int action;
+
+        /**
+         * Comprehensive constructor.
+         *
+         * @param motionEvent motion event to store
+         * @param action corresponding action
+         */
+        public MotionEventWrapper(MotionEvent motionEvent, int action)
+        {
+            this.motionEvent = motionEvent;
+            this.action = action;
+        }
+    }
+
+    /**
+     *  Wrapper class for motion events along with their corresponding action
+     *
+     *  @author Dunhili
+     *  @version Feb 17, 2014
+     */
+    protected class KeyEventWrapper
+    {
+        /** Key event */
+        public KeyEvent keyEvent;
+
+        /** Corresponding key code */
+        public int keyCode;
+
+        /**
+         * Comprehensive constructor.
+         *
+         * @param keyEvent key event to store
+         * @param keyCode corresponding key code
+         */
+        public KeyEventWrapper(KeyEvent keyEvent, int keyCode)
+        {
+            this.keyEvent = keyEvent;
+            this.keyCode = keyCode;
+        }
+    }
+
+    /**
+     *  Inner class for the gesture detector, adds double taps to the buffer.
+     *
+     *  @author Dunhili
+     *  @version Feb 19, 2014
+     */
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onDown(MotionEvent e)
+        {
+            return false;
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e)
+        {
+            if (!world.isRunning())
+            {
+                return false;
+            }
+
+            return (onFirstBuffer) ? motionBuffer1.add(new MotionEventWrapper(e, e.getAction()))
+                : motionBuffer2.add(new MotionEventWrapper(e, e.getAction()));
         }
     }
 }
