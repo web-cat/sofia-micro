@@ -778,24 +778,16 @@ public class Actor
             {
                 if (width > height)
                 {
-                    float heightAddition = height / (float) width;
-                    float adj = (heightAddition < bb.height()) ? heightAddition :
-                        bb.height();
-
                     super.setBounds(new RectF(
                         bb.left, bb.top,
                         bb.left + bb.width(),
-                        bb.top + adj));
+                        bb.top + (height / (float) width) * bb.height()));
                 }
                 else if (width < height)
                 {
-                    float widthAddition = width / (float) height;
-                    float adj = (widthAddition < bb.height()) ? widthAddition :
-                        bb.height();
-
                     super.setBounds(new RectF(
                         bb.left, bb.top,
-                        bb.left + adj,
+                        bb.left + (width / (float) height) * bb.width(),
                         bb.top + bb.height()));
                 }
                 else
