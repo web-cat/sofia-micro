@@ -88,7 +88,6 @@ public class Actor
         this(null, scaleToCell);
     }
 
-
     // ----------------------------------------------------------
     /**
      * Create a new Actor.
@@ -115,7 +114,6 @@ public class Actor
 
 
     //~ Public Methods (Greenfoot style) ......................................
-
     // ----------------------------------------------------------
     /**
      * The act method is called by the system to give actors a chance to
@@ -745,7 +743,9 @@ public class Actor
      */
     private void updateBounds(float x, float y)
     {
-        super.setBounds(new RectF(x - 0.45f, y - 0.45f, x + 0.45f, y + 0.45f));
+        RectF bounds = getBounds();
+        super.setBounds(new RectF(x - bounds.width() / 2, y - bounds.height() / 2,
+            x + bounds.width() / 2, y + bounds.height() / 2));
     }
 
     // ----------------------------------------------------------
@@ -778,22 +778,30 @@ public class Actor
             {
                 if (width > height)
                 {
+                    float heightAddition = height / (float) width;
+                    float adj = (heightAddition < bb.height()) ? heightAddition :
+                        bb.height();
+
                     super.setBounds(new RectF(
                         bb.left, bb.top,
-                        bb.left + 1.0f,
-                        bb.top + (height / (float)width)));
+                        bb.left + bb.width(),
+                        bb.top + adj));
                 }
                 else if (width < height)
                 {
+                    float widthAddition = width / (float) height;
+                    float adj = (widthAddition < bb.height()) ? widthAddition :
+                        bb.height();
+
                     super.setBounds(new RectF(
                         bb.left, bb.top,
-                        bb.left + (width / (float)height),
-                        bb.top + 1.0f));
+                        bb.left + adj,
+                        bb.top + bb.height()));
                 }
                 else
                 {
                     super.setBounds(new RectF(
-                        bb.left, bb.top, bb.left + 1.0f, bb.top + 1.0f));
+                        bb.left, bb.top, bb.left + bb.width(), bb.top + bb.height()));
                 }
             }
             else
