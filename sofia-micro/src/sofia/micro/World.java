@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import sofia.internal.events.DpadDispatcher;
 import sofia.micro.WorldView.KeyEventWrapper;
 import sofia.micro.WorldView.MotionEventWrapper;
 import java.util.ArrayList;
@@ -207,7 +208,6 @@ public class World
         setScaledCellSize(scaledCellSize, scaleToFit);
         deferredAdds = new java.util.ArrayList<Actor>();
         dpad = null;
-        //dpad = new DirectionalPad(new RectF(-0.45f, -0.45f, 0.45f, 0.45f));
         engine = new Engine();
         engine.start();
     }
@@ -275,6 +275,11 @@ public class World
             }
         }
         actor.addedToWorld(this);
+
+        if (dpad == null && DpadDispatcher.hasDPadListeners(actor))
+        {
+            addDirectionalPad();
+        }
     }
 
 
@@ -293,21 +298,6 @@ public class World
     {
         actor.setGridLocation(x, y);
         add(actor);
-    }
-
-    /**
-     * Adds a directional pad to the world view. Note that a view should only contain
-     * a single dpad.
-     *
-     * @param bounds bounds for the directional pad to be set
-     */
-    public void setDirectionalPadBounds(RectF bounds)
-    {
-        dpad = new DirectionalPad(bounds);
-        if (!view.getShapes().withClass(DirectionalPad.class).exist())
-        {
-            view.add(dpad);
-        }
     }
 
     // ----------------------------------------------------------
@@ -1043,10 +1033,10 @@ public class World
                 }
                 deferredRemoves.clear();
             }
-            if (dpad != null)
+            if (dpad != null && !view.getShapes().withClass(DirectionalPad.class).exist())
             {
                 view.add(dpad);
-                dpad.setY(height - 1);
+                changeDirectionalPadBounds();
             }
         }
     }
@@ -1158,6 +1148,41 @@ public class World
         {
             throw new IllegalStateException(WORLD_NOT_IN_VIEW);
         }
+    }
+
+    /**
+     * Handles the logic for adding the directional pad to the world.
+     */
+    private void addDirectionalPad()
+    {
+        dpad = new DirectionalPad(new RectF());
+        if (view != null)
+        {
+            view.add(dpad);
+            changeDirectionalPadBounds();
+        }
+    }
+
+    /**
+     * Fixes the bounds for the dpad.
+     */
+    private void changeDirectionalPadBounds()
+    {
+        // Set the bounds to the dpad to match the dimensions
+        // of the image
+        Image image = dpad.getImage();
+        image.resolveAgainstContext(getWorldView().getContext());
+
+        RectF bounds = dpad.getBounds();
+        int imageWidth = image.getWidth() / 2;
+        int imageHeight = image.getHeight() / 2;
+        RectF newBounds = scaleRawPixels(imageWidth, imageHeight);
+        newBounds.offsetTo(bounds.left, bounds.top);
+        dpad.setBounds(newBounds);
+
+        // Place image in the bottom-left corner
+        dpad.setX(imageWidth / 2);
+        dpad.setY(height - imageHeight / 2);
     }
 
 
@@ -1475,8 +1500,6 @@ public class World
         {
             List<MotionEventWrapper> motionBuffer = view.getMotionBuffer();
             List<KeyEventWrapper> keyBuffer = view.getKeyBuffer();
-            //LinkedList<KeyEvent> keyBuffer = view.getKeyBuffer();
-            //LinkedList<Integer> keyCodeBuffer = view.getKeyCodeBuffer();
             view.swapBuffers();
 
             log.debug("beginning step");
@@ -1521,10 +1544,16 @@ public class World
                             World.this.scaledCellSize, e.motionEvent, e.action);
                     }
                 }
-                //for (KeyEventWrapper e : keyBuffer)
-                //{
-                    // dispatch key events
-                //}
+
+                // if the world has any dpad listeners, dispatch key events to it
+                if (!keyBuffer.isEmpty() && DpadDispatcher.hasDPadListeners(World.this))
+                {
+                    for (KeyEventWrapper e : keyBuffer)
+                    {
+                        DpadDispatcher.dispatchTo(World.this, e.keyCode);
+                    }
+                }
+
                 act();
             }
             catch (Exception e)
@@ -1555,10 +1584,16 @@ public class World
                                     e.motionEvent, e.action);
                             }
                         }
-                        //for (KeyEventWrapper e : keyBuffer)
-                        //{
-                            // dispatch key events
-                        //}
+
+                        // if the actor has any dpad listeners, dispatch key events to it
+                        if (!keyBuffer.isEmpty() && DpadDispatcher.hasDPadListeners(actor))
+                        {
+                            for (KeyEventWrapper e : keyBuffer)
+                            {
+                                DpadDispatcher.dispatchTo(actor, e.keyCode);
+                            }
+                        }
+
                         actor.act();
                     }
                     catch (Exception e)

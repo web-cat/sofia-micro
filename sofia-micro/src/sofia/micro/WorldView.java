@@ -341,7 +341,7 @@ public class WorldView
     @Override
     public boolean onTouchEvent(MotionEvent e)
     {
-        if (!world.isRunning())
+        if (world != null && !world.isRunning())
         {
             return super.onTouchEvent(e);
         }
@@ -361,7 +361,7 @@ public class WorldView
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent e)
     {
-        if (keyCode == KeyEvent.KEYCODE_MENU || !world.isRunning())
+        if (keyCode == KeyEvent.KEYCODE_MENU || (world != null && !world.isRunning()))
         {
             return super.onKeyUp(keyCode, e);
         }
@@ -380,7 +380,7 @@ public class WorldView
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent e)
     {
-        if (keyCode == KeyEvent.KEYCODE_MENU || !world.isRunning())
+        if (keyCode == KeyEvent.KEYCODE_MENU || (world != null && !world.isRunning()))
         {
             return super.onKeyDown(keyCode, e);
         }
