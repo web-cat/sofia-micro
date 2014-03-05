@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import android.graphics.PointF;
 import sofia.internal.events.DpadDispatcher;
 import sofia.micro.WorldView.KeyEventWrapper;
 import sofia.micro.WorldView.MotionEventWrapper;
@@ -712,8 +713,8 @@ public class World
                 // Account for 1 extra pixel on right and bottom if
                 // grid lines are desired
                 int offset = (gridColor == null) ? 0 : 1;
-                float xScale = (vWidth - offset)  / (float)width;
-                float yScale = (vHeight - offset) / (float)height;
+                float xScale = (vWidth - offset)  / (float) width;
+                float yScale = (vHeight - offset) / (float) height;
                 pixelsPerCell = Math.min(xScale, yScale);
             }
 
@@ -721,10 +722,10 @@ public class World
             gridArea = new RectF(0, 0,
                 (pixelsPerCell * width),
                 (pixelsPerCell * height));
-            float xOffset = (vWidth - gridArea.right)/2.0f;
+            float xOffset = (vWidth - gridArea.right) / 2.0f;
             gridArea.left += xOffset;
             gridArea.right += xOffset;
-            float yOffset = (vHeight - gridArea.bottom)/2.0f;
+            float yOffset = (vHeight - gridArea.bottom) / 2.0f;
             gridArea.top += yOffset;
             gridArea.bottom += yOffset;
 
@@ -1045,6 +1046,7 @@ public class World
     // ----------------------------------------------------------
     /**
      * Get the (Android) view that is displaying this world.
+     *
      * @return The view displaying this world.
      */
     /* package */ WorldView getWorldView()
@@ -1054,6 +1056,11 @@ public class World
 
 
     // ----------------------------------------------------------
+    /**
+     * Returns the matrix used for transforming the grid coordinates.
+     *
+     * @return Matrix for grid coordinates
+     */
     /* package */ Matrix getGridTransform()
     {
         return gridTransform;
@@ -1071,6 +1078,17 @@ public class World
         return new RectF(0.0f, 0.0f,
             width / scaleFactor,
             height / scaleFactor);
+    }
+
+    // ----------------------------------------------------------
+    /**
+     * Returns the number of pixels per cell.
+     *
+     * @return pixels per cell
+     */
+    /* package */ float getCellSize()
+    {
+        return pixelsPerCell;
     }
 
 
@@ -1540,8 +1558,8 @@ public class World
                 {
                     for (MotionEventWrapper e : motionBuffer)
                     {
-                        TouchDispatcher.dispatchTo(World.this,
-                            World.this.scaledCellSize, e.motionEvent, e.action);
+                        TouchDispatcher.dispatchTo(World.this, e.motionEvent,
+                            e.action, new PointF(e.x, e.y));
                     }
                 }
 
@@ -1580,8 +1598,8 @@ public class World
                         {
                             for (MotionEventWrapper e : motionBuffer)
                             {
-                                TouchDispatcher.dispatchTo(actor, World.this.scaledCellSize,
-                                    e.motionEvent, e.action);
+                                TouchDispatcher.dispatchTo(actor, e.motionEvent,
+                                    e.action, new PointF(e.x, e.y));
                             }
                         }
 

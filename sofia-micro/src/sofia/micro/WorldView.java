@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import android.content.pm.ActivityInfo;
 import android.view.GestureDetector;
 import java.util.List;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class WorldView
 
     private World world;
 
-    // We use 2 sets of 2 buffers, motion and action buffer store the touch
+    // We use 2 sets of 2 buffers, motion buffers store the touch
     // events along with the corresponding action, the key buffer and key code
     // store the key events and the corresponding key code. 2 sets of these buffers
     // are used so that while one buffer is being processed during the act() of the
@@ -346,9 +347,24 @@ public class WorldView
             return super.onTouchEvent(e);
         }
 
+        // Adjusts the x/y coordinate to be within the World.
+        float cellX = e.getX();
+        float cellY = e.getY();
+        if (world.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+        {
+            cellX -= (getWidth() - (world.getWidth() * world.getCellSize())) / 2;
+        }
+        else if (world.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+        {
+            cellY -= (getHeight() - (world.getHeight() * world.getCellSize())) / 2;
+        }
+        cellX /= world.getCellSize();
+        cellY /= world.getCellSize();
+        e.setLocation(cellX, cellY);
+
         gestureDetector.onTouchEvent(e);
-        return (onFirstBuffer) ? motionBuffer1.add(new MotionEventWrapper(e, e.getAction()))
-            : motionBuffer2.add(new MotionEventWrapper(e, e.getAction()));
+        MotionEventWrapper wrapper = new MotionEventWrapper(e, e.getAction(), cellX, cellY);
+        return (onFirstBuffer) ? motionBuffer1.add(wrapper) : motionBuffer2.add(wrapper);
     }
 
     /**
@@ -366,8 +382,8 @@ public class WorldView
             return super.onKeyUp(keyCode, e);
         }
 
-        return (onFirstBuffer) ? keyBuffer1.add(new KeyEventWrapper(e, keyCode))
-            : keyBuffer2.add(new KeyEventWrapper(e, keyCode));
+        KeyEventWrapper wrapper = new KeyEventWrapper(e, keyCode);
+        return (onFirstBuffer) ? keyBuffer1.add(wrapper) : keyBuffer2.add(wrapper);
     }
 
     /**
@@ -385,8 +401,8 @@ public class WorldView
             return super.onKeyDown(keyCode, e);
         }
 
-        return (onFirstBuffer) ? keyBuffer1.add(new KeyEventWrapper(e, keyCode))
-            : keyBuffer2.add(new KeyEventWrapper(e, keyCode));
+        KeyEventWrapper wrapper = new KeyEventWrapper(e, keyCode);
+        return (onFirstBuffer) ? keyBuffer1.add(wrapper) : keyBuffer2.add(wrapper);
     }
 
     /**
@@ -472,8 +488,8 @@ public class WorldView
     /**
      *  Wrapper class for motion events along with their corresponding action
      *
-     *  @author Dunhili
-     *  @version Feb 17, 2014
+     *  @author Brian Bowden
+     *  @version March 5, 2014
      */
     protected class MotionEventWrapper
     {
@@ -483,24 +499,34 @@ public class WorldView
         /** Corresponding action */
         public int action;
 
+        /** Modified x coordinate for the corresponding grid cell */
+        public float x;
+
+        /** Modified x coordinate for the corresponding grid cell */
+        public float y;
+
         /**
          * Comprehensive constructor.
          *
          * @param motionEvent motion event to store
          * @param action corresponding action
+         * @param x x coordinate for the cell
+         * @param y y coordinate for the cell
          */
-        public MotionEventWrapper(MotionEvent motionEvent, int action)
+        public MotionEventWrapper(MotionEvent motionEvent, int action, float x, float y)
         {
             this.motionEvent = motionEvent;
             this.action = action;
+            this.x = (float) Math.floor(x);
+            this.y = (float) Math.floor(y);
         }
     }
 
     /**
      *  Wrapper class for motion events along with their corresponding action
      *
-     *  @author Dunhili
-     *  @version Feb 17, 2014
+     *  @author Brian Bowden
+     *  @version March 5, 2014
      */
     protected class KeyEventWrapper
     {
@@ -526,8 +552,8 @@ public class WorldView
     /**
      *  Inner class for the gesture detector, adds double taps to the buffer.
      *
-     *  @author Dunhili
-     *  @version Feb 19, 2014
+     *  @author Brian Bowden
+     *  @version March 5, 2014
      */
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
         /**
@@ -545,8 +571,9 @@ public class WorldView
 
             // currently using -1 as the 'action' for double-tap, will probably
             // want to change later
-            return (onFirstBuffer) ? motionBuffer1.add(new MotionEventWrapper(e, -1))
-                : motionBuffer2.add(new MotionEventWrapper(e, -1));
+            MotionEventWrapper wrapper = new MotionEventWrapper(
+                e, e.getAction(), e.getX(), e.getY());
+            return (onFirstBuffer) ? motionBuffer1.add(wrapper) : motionBuffer2.add(wrapper);
         }
     }
 }
