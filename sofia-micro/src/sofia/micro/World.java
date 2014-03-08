@@ -1203,6 +1203,18 @@ public class World
         dpad.setY(height - imageHeight / 2);
     }
 
+    /**
+     * Wrapper method for breaking down the motion event wrapper into its parts
+     * and dispatching the motion events.
+     *
+     * @param target object to dispatch event to
+     * @param e wrapper for the motion event
+     */
+    private void dispatchMotionEvent(Object target, MotionEventWrapper e)
+    {
+        TouchDispatcher.dispatchTo(target, e.motionEvent, e.action, new PointF(e.x, e.y));
+    }
+
 
     // ----------------------------------------------------------
     private static class ZClassComparator
@@ -1541,7 +1553,7 @@ public class World
                 {
                     if (dpad != null)
                     {
-                        dpad.onTouchDown(e.motionEvent);
+                        dpad.processTouch(e.action, e.x, e.y);
                     }
                 }
             }
@@ -1558,8 +1570,7 @@ public class World
                 {
                     for (MotionEventWrapper e : motionBuffer)
                     {
-                        TouchDispatcher.dispatchTo(World.this, e.motionEvent,
-                            e.action, new PointF(e.x, e.y));
+                        dispatchMotionEvent(World.this, e);
                     }
                 }
 
@@ -1598,8 +1609,7 @@ public class World
                         {
                             for (MotionEventWrapper e : motionBuffer)
                             {
-                                TouchDispatcher.dispatchTo(actor, e.motionEvent,
-                                    e.action, new PointF(e.x, e.y));
+                                dispatchMotionEvent(actor, e);
                             }
                         }
 
