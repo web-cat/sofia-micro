@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import sofia.graphics.ShapeMotion;
 import android.graphics.PointF;
 import sofia.internal.events.DpadDispatcher;
 import sofia.micro.WorldView.KeyEventWrapper;
@@ -1215,6 +1216,22 @@ public class World
         TouchDispatcher.dispatchTo(target, e.motionEvent, e.action, new PointF(e.x, e.y));
     }
 
+    /**
+     * Wakes up or pauses any shape that is dynamic. Used by the engine to pause or
+     * unpause shapes/actors so they don't keep moving while the world is paused.
+     *
+     * @param flag state to set the shape/actor's awake state to
+     */
+    private void wakeUpOrPauseShapes(boolean flag)
+    {
+        for (Shape s : getObjects())
+        {
+            if (s.getShapeMotion() == ShapeMotion.DYNAMIC)
+            {
+                s.setAwake(flag);
+            }
+        }
+    }
 
     // ----------------------------------------------------------
     private static class ZClassComparator
@@ -1512,6 +1529,7 @@ public class World
                 {
                     if (oneStep)
                     {
+                        wakeUpOrPauseShapes(false);
                         log.debug("oneStep request detected, will stop.");
                         oneStep = false;
                         willStop = true;
@@ -1643,7 +1661,7 @@ public class World
         private void notifyOfStart()
         {
             log.debug("notifying started()");
-
+            wakeUpOrPauseShapes(true);
             // started for view
             try
             {
@@ -1675,7 +1693,7 @@ public class World
         private void notifyOfStop()
         {
             log.debug("notifying stopped()");
-
+            wakeUpOrPauseShapes(false);
             // stopped for view
             try
             {
