@@ -856,6 +856,46 @@ public class World
         }
     }
 
+    /**
+     * Wakes up any shape that is dynamic so that it will start moving and detecting
+     * collisions.
+     */
+    public void wakeUpShapes()
+    {
+        if (view == null)
+        {
+            return;
+        }
+
+        for (Shape s : getObjects())
+        {
+            if (s.getShapeMotion() != ShapeMotion.STATIC)
+            {
+                s.setAwake(true);
+                s.restoreSpeed();
+            }
+        }
+    }
+
+    /**
+     * Pauses any shape that is dynamic so that it will stop moving and detecting
+     * collisions.
+     */
+    public void pauseShapes()
+    {
+        if (view == null)
+        {
+            return;
+        }
+
+        for (Shape s : getObjects())
+        {
+            if (s.getShapeMotion() == ShapeMotion.DYNAMIC)
+            {
+                s.setAwake(false);
+            }
+        }
+    }
 
     //~ Protected Methods .....................................................
 
@@ -1040,6 +1080,8 @@ public class World
                 view.add(dpad);
                 changeDirectionalPadBounds();
             }
+
+            pauseShapes();
         }
     }
 
@@ -1214,23 +1256,6 @@ public class World
     private void dispatchMotionEvent(Object target, MotionEventWrapper e)
     {
         TouchDispatcher.dispatchTo(target, e.motionEvent, e.action, new PointF(e.x, e.y));
-    }
-
-    /**
-     * Wakes up or pauses any shape that is dynamic. Used by the engine to pause or
-     * unpause shapes/actors so they don't keep moving while the world is paused.
-     *
-     * @param flag state to set the shape/actor's awake state to
-     */
-    private void wakeUpOrPauseShapes(boolean flag)
-    {
-        for (Shape s : getObjects())
-        {
-            if (s.getShapeMotion() == ShapeMotion.DYNAMIC)
-            {
-                s.setAwake(flag);
-            }
-        }
     }
 
     // ----------------------------------------------------------
@@ -1529,7 +1554,6 @@ public class World
                 {
                     if (oneStep)
                     {
-                        wakeUpOrPauseShapes(false);
                         log.debug("oneStep request detected, will stop.");
                         oneStep = false;
                         willStop = true;
@@ -1552,17 +1576,6 @@ public class World
 
             log.debug("beginning step");
 
-            // act for view
-            try
-            {
-                view.act();
-            }
-            catch (Exception e)
-            {
-                log.error("Unexpected exception in "
-                    + view.getClass().getSimpleName() + ".act()", e);
-            }
-
             // dispatch events to the dpad before we call the act() method
             // for the world or the actors
             try
@@ -1580,27 +1593,21 @@ public class World
                 log.error("Unexpected exception in dispatching events to dpad", e);
             }
 
+            // act for view
+            try
+            {
+                view.act();
+            }
+            catch (Exception e)
+            {
+                log.error("Unexpected exception in "
+                    + view.getClass().getSimpleName() + ".act()", e);
+            }
+
             // act for world
             try
             {
-                // if the world has any listeners, dispatch motion events to it
-                if (!motionBuffer.isEmpty() && TouchDispatcher.hasTouchListeners(World.this))
-                {
-                    for (MotionEventWrapper e : motionBuffer)
-                    {
-                        dispatchMotionEvent(World.this, e);
-                    }
-                }
-
-                // if the world has any dpad listeners, dispatch key events to it
-                if (!keyBuffer.isEmpty() && DpadDispatcher.hasDPadListeners(World.this))
-                {
-                    for (KeyEventWrapper e : keyBuffer)
-                    {
-                        DpadDispatcher.dispatchTo(World.this, e.keyCode);
-                    }
-                }
-
+                dispatchEvents(World.this, motionBuffer, keyBuffer);
                 act();
             }
             catch (Exception e)
@@ -1622,25 +1629,10 @@ public class World
                 {
                     try
                     {
-                        // if the actor has any listeners, dispatch motion events to it
-                        if (!motionBuffer.isEmpty() && TouchDispatcher.hasTouchListeners(actor))
-                        {
-                            for (MotionEventWrapper e : motionBuffer)
-                            {
-                                dispatchMotionEvent(actor, e);
-                            }
-                        }
-
-                        // if the actor has any dpad listeners, dispatch key events to it
-                        if (!keyBuffer.isEmpty() && DpadDispatcher.hasDPadListeners(actor))
-                        {
-                            for (KeyEventWrapper e : keyBuffer)
-                            {
-                                DpadDispatcher.dispatchTo(actor, e.keyCode);
-                            }
-                        }
-
+                        dispatchEvents(actor, motionBuffer, keyBuffer);
                         actor.act();
+                        // temporary fix for physics objects to move properly
+                        actor.updateBounds();
                     }
                     catch (Exception e)
                     {
@@ -1661,7 +1653,7 @@ public class World
         private void notifyOfStart()
         {
             log.debug("notifying started()");
-            wakeUpOrPauseShapes(true);
+            wakeUpShapes();
             // started for view
             try
             {
@@ -1693,7 +1685,7 @@ public class World
         private void notifyOfStop()
         {
             log.debug("notifying stopped()");
-            wakeUpOrPauseShapes(false);
+            pauseShapes();
             // stopped for view
             try
             {
@@ -1739,6 +1731,35 @@ public class World
                     actSet.remove(actor);
                 }
                 deferredRemoves.clear();
+            }
+        }
+
+        /**
+         * Dispatches motion and key events to the target.
+         *
+         * @param target object to dispatch events to
+         * @param motionBuffer list of the buffered motion events
+         * @param keyBuffer list of the buffered key events
+         */
+        private void dispatchEvents(Object target, List<MotionEventWrapper> motionBuffer,
+            List<KeyEventWrapper> keyBuffer)
+        {
+            // if the target has any listeners, dispatch motion events to it
+            if (!motionBuffer.isEmpty() && TouchDispatcher.hasTouchListeners(target))
+            {
+                for (MotionEventWrapper e : motionBuffer)
+                {
+                    dispatchMotionEvent(target, e);
+                }
+            }
+
+            // if the target has any dpad listeners, dispatch key events to it
+            if (!keyBuffer.isEmpty() && DpadDispatcher.hasDPadListeners(target))
+            {
+                for (KeyEventWrapper e : keyBuffer)
+                {
+                    DpadDispatcher.dispatchTo(target, e.keyCode);
+                }
             }
         }
     }
