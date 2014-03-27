@@ -479,7 +479,7 @@ public class Actor
             x = limit(x, world.getWidth());
         }
         super.setX(x);
-        updateBounds(x, getY());
+        updateBounds();
     }
 
 
@@ -528,7 +528,7 @@ public class Actor
             y = limit(y, world.getHeight());
         }
         super.setY(y);
-        updateBounds(getX(), y);
+        updateBounds();
     }
 
 
@@ -566,7 +566,7 @@ public class Actor
             position.y = limit(position.y, world.getHeight());
         }
         super.setPosition(position);
-        updateBounds(getX(), getY());
+        updateBounds();
     }
 
 
@@ -580,7 +580,7 @@ public class Actor
         super.setPosition(pointAndAnchor);
         // Force limit checking
         setPosition(getPosition());
-        updateBounds(getX(), getY());
+        updateBounds();
     }
 
 
@@ -737,12 +737,11 @@ public class Actor
     // ----------------------------------------------------------
     /**
      * Updates the bounds for the image to match the changed x and y coordinate.
-     *
-     * @param x x-coordinate
-     * @param y y-coordinate
      */
-    private void updateBounds(float x, float y)
+    /* package */ void updateBounds()
     {
+        float x = getX();
+        float y = getY();
         RectF bounds = getBounds();
         super.setBounds(new RectF(x - bounds.width() / 2, y - bounds.height() / 2,
             x + bounds.width() / 2, y + bounds.height() / 2));
