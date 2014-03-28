@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import sofia.graphics.Drawing;
 import java.util.Set;
 import sofia.graphics.Anchor;
 import sofia.graphics.ImageShape;
@@ -479,7 +480,6 @@ public class Actor
             x = limit(x, world.getWidth());
         }
         super.setX(x);
-        updateBounds();
     }
 
 
@@ -528,7 +528,6 @@ public class Actor
             y = limit(y, world.getHeight());
         }
         super.setY(y);
-        updateBounds();
     }
 
 
@@ -566,7 +565,6 @@ public class Actor
             position.y = limit(position.y, world.getHeight());
         }
         super.setPosition(position);
-        updateBounds();
     }
 
 
@@ -580,7 +578,6 @@ public class Actor
         super.setPosition(pointAndAnchor);
         // Force limit checking
         setPosition(getPosition());
-        updateBounds();
     }
 
 
@@ -713,6 +710,24 @@ public class Actor
         return getNickName() + " at (" + getGridX() + ", " + getGridY() + ")";
     }
 
+    // ----------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     *
+     * Users who wish to write their own draw methods for actors should be
+     * sure to call the super.draw(drawing) in their implementation if they are
+     * using physics objects to ensure the bounds are correctly updated.
+     */
+    @Override
+    public void draw(Drawing drawing)
+    {
+        if (world != null)
+        {
+            updateBoundsIfNecessary();
+            super.draw(drawing);
+        }
+    }
+
 
     //~ Infrastructure Methods ................................................
 
@@ -738,13 +753,20 @@ public class Actor
     /**
      * Updates the bounds for the image to match the changed x and y coordinate.
      */
-    /* package */ void updateBounds()
+    /* package */ void updateBoundsIfNecessary()
     {
+        RectF bounds = getBounds();
+        float boundsX = bounds.centerX();
+        float boundsY = bounds.centerX();
         float x = getX();
         float y = getY();
-        RectF bounds = getBounds();
-        super.setBounds(new RectF(x - bounds.width() / 2, y - bounds.height() / 2,
-            x + bounds.width() / 2, y + bounds.height() / 2));
+
+        // check if the center of the bounds is different from the the actor
+        if ((Math.abs(boundsX - x) > 0.01) || (Math.abs(boundsY - y) > 0.01))
+        {
+            super.setBounds(new RectF(x - bounds.width() / 2, y - bounds.height() / 2,
+                x + bounds.width() / 2, y + bounds.height() / 2));
+        }
     }
 
     // ----------------------------------------------------------

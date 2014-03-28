@@ -1631,8 +1631,6 @@ public class World
                     {
                         dispatchEvents(actor, motionBuffer, keyBuffer);
                         actor.act();
-                        // temporary fix for physics objects to move properly
-                        actor.updateBounds();
                     }
                     catch (Exception e)
                     {
