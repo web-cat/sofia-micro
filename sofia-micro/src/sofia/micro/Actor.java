@@ -27,6 +27,7 @@ import android.graphics.RectF;
  * their own implementations.</p>
  *
  * @author  Stephen Edwards
+ * @author  Brian Bowden
  * @author  Last changed by $Author: edwards $
  * @version $Date: 2012/08/21 14:19 $
  */
