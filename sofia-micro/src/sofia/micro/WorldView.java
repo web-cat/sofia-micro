@@ -39,17 +39,11 @@ public class WorldView
     // world, the other buffer can store events that are fired
     private boolean onFirstBuffer = true;
 
-    /*private LinkedList<EventWrapper> motionBuffer1 = new LinkedList<EventWrapper>();
-    private LinkedList<EventWrapper> keyBuffer1 = new LinkedList<EventWrapper>();
-
-    private LinkedList<EventWrapper> motionBuffer2 = new LinkedList<EventWrapper>();
-    private LinkedList<EventWrapper> keyBuffer2 = new LinkedList<EventWrapper>();*/
-
     private ArrayList<MotionEventWrapper> motionBuffer1 = new ArrayList<MotionEventWrapper>();
-    private ArrayList<KeyEventWrapper> keyBuffer1 = new ArrayList<KeyEventWrapper>();
-
     private ArrayList<MotionEventWrapper> motionBuffer2 = new ArrayList<MotionEventWrapper>();
+    
     private ArrayList<KeyEventWrapper> keyBuffer2 = new ArrayList<KeyEventWrapper>();
+    private ArrayList<KeyEventWrapper> keyBuffer1 = new ArrayList<KeyEventWrapper>();
 
     private GestureDetector gestureDetector;
 
