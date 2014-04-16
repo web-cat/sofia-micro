@@ -1,11 +1,9 @@
 package sofia.micro;
 
-import sofia.graphics.ShapeMotion;
 import android.graphics.PointF;
 import sofia.internal.events.DpadDispatcher;
 import sofia.micro.WorldView.KeyEventWrapper;
 import sofia.micro.WorldView.MotionEventWrapper;
-import java.util.ArrayList;
 import sofia.graphics.DirectionalPad;
 import sofia.internal.events.TouchDispatcher;
 import android.app.Activity;
@@ -55,8 +53,8 @@ public class World
     private RectF  gridArea;        // In pixels
     private RectF  backgroundRect;  // BB for background image in grid coords
     private Matrix gridTransform;
-    private List<Actor> deferredAdds;
-    private Set<Actor> deferredRemoves;
+    private List<Shape> deferredAdds;
+    private Set<Shape> deferredRemoves;
     private Set<Actor> actSet;
     private Object actorSetLock = new Object();
     private DirectionalPad dpad;
@@ -208,7 +206,7 @@ public class World
         background.setUseDefaultIfNotFound(false);
         grid = new RectF(0, 0, width, height);
         setScaledCellSize(scaledCellSize, scaleToFit);
-        deferredAdds = new java.util.ArrayList<Actor>();
+        deferredAdds = new java.util.ArrayList<Shape>();
         dpad = null;
         engine = new Engine();
         engine.start();
@@ -260,6 +258,7 @@ public class World
                 // TODO: implement appropriate add semantics
                 actor.setWorld(this);
                 view.add((Shape)actor);
+
                 if (actSet != null)
                 {
                     if (isRunning())
@@ -300,6 +299,44 @@ public class World
     {
         actor.setGridLocation(x, y);
         add(actor);
+    }
+
+    /**
+     * Adds a non-actor shape to the world.
+     *
+     * @param shape shape to add to the world
+     */
+    public void add(Shape shape)
+    {
+        if (view == null)
+        {
+            synchronized (deferredAdds)
+            {
+                deferredAdds.add(shape);
+            }
+        }
+        else
+        {
+            view.add(shape);
+        }
+
+        if (dpad == null && DpadDispatcher.hasDPadListeners(shape))
+        {
+            addDirectionalPad();
+        }
+    }
+
+    /**
+     * Adds a non-actor shape to the world.
+     *
+     * @param shape shape to add to the world
+     * @param x x-coordinate to add the shape
+     * @param y y-coordinate to add the shape
+     */
+    public void add(Shape shape, float x, float y)
+    {
+        shape.setPosition(x, y);
+        add(shape);
     }
 
     // ----------------------------------------------------------
@@ -347,6 +384,29 @@ public class World
                     "The specified Actor is not in this World.");
                 }
             }
+        }
+    }
+
+    /**
+     * Removes the given shape from the view.
+     *
+     * @param shape shape to remove
+     */
+    public void remove(Shape shape)
+    {
+        if (view == null)
+        {
+            if (isRunning())
+            {
+                synchronized (deferredRemoves)
+                {
+                    deferredRemoves.add(shape);
+                }
+            }
+        }
+        else
+        {
+            view.remove(shape);
         }
     }
 
@@ -867,14 +927,7 @@ public class World
             return;
         }
 
-        for (Shape s : getObjects())
-        {
-            if (s.getShapeMotion() != ShapeMotion.STATIC)
-            {
-                s.setAwake(true);
-                s.restoreSpeed();
-            }
-        }
+        view.paused = false;
     }
 
     /**
@@ -888,13 +941,7 @@ public class World
             return;
         }
 
-        for (Shape s : getObjects())
-        {
-            if (s.getShapeMotion() == ShapeMotion.DYNAMIC)
-            {
-                s.setAwake(false);
-            }
-        }
+        view.paused = true;
     }
 
     //~ Protected Methods .....................................................
@@ -1053,7 +1100,7 @@ public class World
         setScaledCellSize(scaledCellSize, scaleToFit);
         if (deferredRemoves == null)
         {
-            deferredRemoves = new java.util.TreeSet<Actor>(
+            deferredRemoves = new java.util.TreeSet<Shape>(
                 new ZClassComparator(view.getShapeField(), false));
         }
 
@@ -1061,17 +1108,31 @@ public class World
         {
             synchronized (deferredAdds)
             {
-                for (Actor actor : deferredAdds)
+                for (Shape shape : deferredAdds)
                 {
-                    add(actor);
+                    if (shape instanceof Actor)
+                    {
+                        add((Actor) shape);
+                    }
+                    else
+                    {
+                        add(shape);
+                    }
                 }
                 deferredAdds.clear();
             }
             synchronized (deferredRemoves)
             {
-                for (Actor actor : deferredRemoves)
+                for (Shape shape : deferredRemoves)
                 {
-                    remove(actor);
+                    if (shape instanceof Actor)
+                    {
+                        remove((Actor) shape);
+                    }
+                    else
+                    {
+                        remove(shape);
+                    }
                 }
                 deferredRemoves.clear();
             }
@@ -1161,6 +1222,7 @@ public class World
     // ----------------------------------------------------------
     /* package */ void runOneStep()
     {
+        wakeUpShapes(); // need to figure out how to stop the simulation later
         engine.requestOneStep();
     }
 
@@ -1716,17 +1778,31 @@ public class World
         {
             synchronized (deferredAdds)
             {
-                for (Actor actor : deferredAdds)
+                for (Shape shape : deferredAdds)
                 {
-                    actSet.add(actor);
+                    if (shape instanceof Actor)
+                    {
+                        actSet.add((Actor) shape);
+                    }
+                    else
+                    {
+                        add(shape);
+                    }
                 }
                 deferredAdds.clear();
             }
             synchronized (deferredRemoves)
             {
-                for (Actor actor : deferredRemoves)
+                for (Shape shape : deferredRemoves)
                 {
-                    actSet.remove(actor);
+                    if (shape instanceof Actor)
+                    {
+                        actSet.remove((Actor) shape);
+                    }
+                    else
+                    {
+                        remove(shape);
+                    }
                 }
                 deferredRemoves.clear();
             }
