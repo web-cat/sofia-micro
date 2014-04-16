@@ -63,6 +63,10 @@ public class DelegatingShape
     public void setDelegate(Shape delegate)
     {
         this.delegate = delegate;
+        if (delegate != null)
+        {
+            setPosition(delegate.getPosition());
+        }
     }
 
 
