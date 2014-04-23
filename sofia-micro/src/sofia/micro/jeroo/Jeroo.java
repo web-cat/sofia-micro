@@ -1,5 +1,6 @@
 package sofia.micro.jeroo;
 
+import sofia.micro.Actor;
 import java.util.Set;
 import android.graphics.Point;
 import sofia.graphics.Image;
@@ -368,9 +369,7 @@ public class Jeroo
      */
     public boolean seesFlower(RelativeDirection direction)
     {
-        Point offset = this.direction.turn(direction).offset();
-        return isInsideGrid(offset)
-            && getOneObjectAtOffset(offset.x, offset.y, Flower.class) != null;
+        return seesObject(direction, Flower.class);
     }
 
 
@@ -382,9 +381,7 @@ public class Jeroo
      */
     public boolean seesJeroo(RelativeDirection direction)
     {
-        Point offset = this.direction.turn(direction).offset();
-        return isInsideGrid(offset)
-            && getOneObjectAtOffset(offset.x, offset.y, Jeroo.class) != null;
+        return seesObject(direction, Jeroo.class);
     }
 
 
@@ -396,9 +393,7 @@ public class Jeroo
      */
     public boolean seesNet(RelativeDirection direction)
     {
-        Point offset = this.direction.turn(direction).offset();
-        return isInsideGrid(offset)
-            && getOneObjectAtOffset(offset.x, offset.y, Net.class) != null;
+        return seesObject(direction, Net.class);
     }
 
 
@@ -410,9 +405,7 @@ public class Jeroo
      */
     public boolean seesWater(RelativeDirection direction)
     {
-        Point offset = this.direction.turn(direction).offset();
-        return isInsideGrid(offset)
-            && getOneObjectAtOffset(offset.x, offset.y, Water.class) != null;
+        return seesObject(direction, Water.class);
     }
 
 
@@ -425,9 +418,7 @@ public class Jeroo
      */
     public boolean seesClear(RelativeDirection direction)
     {
-        Point offset = this.direction.turn(direction).offset();
-        return isInsideGrid(offset)
-            && getOneObjectAtOffset(offset.x, offset.y, null) == null;
+        return seesObject(direction, null);
     }
 
 
@@ -466,5 +457,22 @@ public class Jeroo
     private void log(String message)
     {
         System.out.println(this + " " + message);
+    }
+
+    /**
+     * Returns true if the given cls is at the direction.
+     * @param direction The direction to check.
+     * @param cls class of object to check for
+     * @return true if there are no obstacles in the specified direction.
+     */
+    private boolean seesObject(RelativeDirection direction, Class<? extends Actor> cls)
+    {
+        Point offset = new Point(0, 0);
+        if (direction != RelativeDirection.HERE)
+        {
+            offset = this.direction.turn(direction).offset();
+        }
+        return isInsideGrid(offset)
+            && getOneObjectAtOffset(offset.x, offset.y, cls) != null;
     }
 }
