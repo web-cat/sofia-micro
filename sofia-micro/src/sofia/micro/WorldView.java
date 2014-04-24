@@ -41,7 +41,7 @@ public class WorldView
 
     private ArrayList<MotionEventWrapper> motionBuffer1 = new ArrayList<MotionEventWrapper>();
     private ArrayList<MotionEventWrapper> motionBuffer2 = new ArrayList<MotionEventWrapper>();
-    
+
     private ArrayList<KeyEventWrapper> keyBuffer2 = new ArrayList<KeyEventWrapper>();
     private ArrayList<KeyEventWrapper> keyBuffer1 = new ArrayList<KeyEventWrapper>();
 
@@ -344,6 +344,19 @@ public class WorldView
         // Adjusts the x/y coordinate to be within the World.
         float cellX = e.getX();
         float cellY = e.getY();
+
+        // inverts the x and/or y if the axis are flipped
+        if (getWorld().getWorldView().getCoordinateSystem().isFlippedX())
+        {
+            cellX = getWorld().getWidth() - cellX;
+        }
+        if (getWorld().getWorldView().getCoordinateSystem().isFlippedY())
+        {
+            cellY = getWorld().getHeight() - cellY;
+        }
+
+        // adjusts the x and y for worlds where there's empty space around the
+        // world itself
         if (world.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         {
             cellX -= (getWidth() - (world.getWidth() * world.getCellSize())) / 2;
