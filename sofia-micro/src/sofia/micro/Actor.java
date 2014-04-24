@@ -106,7 +106,7 @@ public class Actor
         this.scaleToCell = scaleToCell;
         Image image = new Image(getClass());
         image.setScaleForDpi(false);
-        RectF bounds = new RectF(-0.45f, -0.45f, 0.45f, 0.45f);
+        RectF bounds = new RectF(-0.48f, -0.48f, 0.48f, 0.48f);
         setDelegate(new ImageShape(image, bounds));
 
         // This call is via super, to avoid the variable reset employed
@@ -801,15 +801,15 @@ public class Actor
                 if (width > height)
                 {
                     super.setBounds(new RectF(
-                        bb.left, bb.top,
+                        bb.left, bb.top - (height / (float) width) * bb.height(),
                         bb.left + bb.width(),
-                        bb.top + (height / (float) width) * bb.height()));
+                        bb.top));
                 }
                 else if (width < height)
                 {
                     super.setBounds(new RectF(
-                        bb.left, bb.top,
-                        bb.left + (width / (float) height) * bb.width(),
+                        bb.left - (width / (float) height) * bb.width(), bb.top,
+                        bb.left,
                         bb.top + bb.height()));
                 }
                 else
