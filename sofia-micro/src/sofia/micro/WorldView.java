@@ -1,5 +1,6 @@
 package sofia.micro;
 
+import android.graphics.PointF;
 import android.content.pm.ActivityInfo;
 import android.view.GestureDetector;
 import java.util.List;
@@ -341,36 +342,29 @@ public class WorldView
             return super.onTouchEvent(e);
         }
 
-        // Adjusts the x/y coordinate to be within the World.
-        float cellX = e.getX();
-        float cellY = e.getY();
-
-        // inverts the x and/or y if the axis are flipped
-        if (getWorld().getWorldView().getCoordinateSystem().isFlippedX())
-        {
-            cellX = getWorld().getWidth() - cellX;
-        }
-        if (getWorld().getWorldView().getCoordinateSystem().isFlippedY())
-        {
-            cellY = getWorld().getHeight() - cellY;
-        }
+        PointF adjustedCoord = getCoordinateSystem().deviceToLocal(e.getX(), e.getY());
 
         // adjusts the x and y for worlds where there's empty space around the
         // world itself
-        if (world.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+        if (world.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+         && world.getWidth() != getWidth())
         {
-            cellX -= (getWidth() - (world.getWidth() * world.getCellSize())) / 2;
+            adjustedCoord.x -= (getWidth() - (world.getWidth() * world.getCellSize())) / 2;
         }
-        else if (world.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+        else if (world.getOrientation() == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+              && world.getHeight() != getHeight())
         {
-            cellY -= (getHeight() - (world.getHeight() * world.getCellSize())) / 2;
+            adjustedCoord.y -= (getHeight() - (world.getHeight() * world.getCellSize())) / 2;
         }
-        cellX /= world.getCellSize();
-        cellY /= world.getCellSize();
-        e.setLocation(cellX, cellY);
+
+        adjustedCoord.x /= getWorld().getCellSize();
+        adjustedCoord.y /= getWorld().getCellSize();
+        e.setLocation(adjustedCoord.x, adjustedCoord.y);
 
         gestureDetector.onTouchEvent(e);
-        MotionEventWrapper wrapper = new MotionEventWrapper(e, e.getAction(), cellX, cellY);
+        MotionEventWrapper wrapper = new MotionEventWrapper(
+            e, e.getAction(), adjustedCoord.x, adjustedCoord.y);
+
         return (onFirstBuffer) ? motionBuffer1.add(wrapper) : motionBuffer2.add(wrapper);
     }
 
