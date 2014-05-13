@@ -21,7 +21,7 @@ public class Island
      */
     public Island()
     {
-        super();
+        this(20, 12);
     }
 
 
@@ -36,5 +36,22 @@ public class Island
     public Island(int width, int height)
     {
         super(width, height);
+        setCellBackground("ground.png");
+        addWater();
+    }
+
+    private void addWater()
+    {
+        for (int i = 0; i < getWidth(); i++)
+        {
+            add(new Water(i, 0));
+            add(new Water(i, getHeight() - 1));
+        }
+
+        for (int j = 0; j < getWidth(); j++)
+        {
+            add(new Water(0, j));
+            add(new Water(getWidth() - 1, j));
+        }
     }
 }
