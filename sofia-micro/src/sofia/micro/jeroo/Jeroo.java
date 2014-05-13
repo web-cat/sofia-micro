@@ -134,8 +134,8 @@ public class Jeroo
         setGridLocation(x, y);
         this.direction = direction;
         this.flowers = flowers;
-        imgRight = new Image("jeroo");
-        imgLeft = new Image("jeroo_left");
+        imgRight = new Image("kangaroo");
+        imgLeft = new Image("kangaroo_left");
         if (direction == WEST)
         {
             setImage(imgLeft);
@@ -472,6 +472,7 @@ public class Jeroo
         {
             offset = this.direction.turn(direction).offset();
         }
+
         return isInsideGrid(offset)
             && getOneObjectAtOffset(offset.x, offset.y, cls) != null;
     }
