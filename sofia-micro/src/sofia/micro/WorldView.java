@@ -43,8 +43,8 @@ public class WorldView
     private ArrayList<MotionEventWrapper> motionBuffer1 = new ArrayList<MotionEventWrapper>();
     private ArrayList<MotionEventWrapper> motionBuffer2 = new ArrayList<MotionEventWrapper>();
 
-    private ArrayList<KeyEventWrapper> keyBuffer2 = new ArrayList<KeyEventWrapper>();
     private ArrayList<KeyEventWrapper> keyBuffer1 = new ArrayList<KeyEventWrapper>();
+    private ArrayList<KeyEventWrapper> keyBuffer2 = new ArrayList<KeyEventWrapper>();
 
     private GestureDetector gestureDetector;
 
