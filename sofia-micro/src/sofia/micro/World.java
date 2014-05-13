@@ -1222,7 +1222,7 @@ public class World
     // ----------------------------------------------------------
     /* package */ void runOneStep()
     {
-        wakeUpShapes(); // need to figure out how to stop the simulation later
+        wakeUpShapes();
         engine.requestOneStep();
     }
 
@@ -1589,7 +1589,6 @@ public class World
                         // Ignore and resume
                     }
 
-
                     if (signalStart)
                     {
                         notifyOfStart();
@@ -1611,7 +1610,6 @@ public class World
                 }
 
                 step();
-
                 synchronized (this)
                 {
                     if (oneStep)
@@ -1687,7 +1685,7 @@ public class World
             }
             for (Actor actor : actSet)
             {
-                if (!deferredRemoves.contains(actor))
+                if (!deferredRemoves.contains(actor) && actor.getWorld() != null)
                 {
                     try
                     {
