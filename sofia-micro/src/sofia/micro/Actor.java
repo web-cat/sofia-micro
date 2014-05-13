@@ -155,6 +155,22 @@ public class Actor
         setGridLocation(getGridX() + dx, getGridY() + dy);
     }
 
+    /**
+     * Move this actor the specified distance in the direction it is
+     * currently facing.
+     *
+     * <p>The direction can be set using the {@link #setRotation(double)}
+     * method.</p>
+     *
+     * @param distance  The distance to move. A negative value will move backwards.
+     */
+    public void move(float distance)
+    {
+        double radians = Math.toRadians(getRotation());
+        float dx = (float) Math.cos(radians) * distance;
+        float dy = (float) Math.sin(radians) * distance;
+        setPosition(super.getX() + dx, super.getY() + dy);
+    }
 
     // ----------------------------------------------------------
     /**
